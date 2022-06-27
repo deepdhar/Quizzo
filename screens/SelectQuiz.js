@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react'
 import { 
+    Image,
     StyleSheet, 
     Text, 
     View,
@@ -20,7 +21,18 @@ const SelectQuiz = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.headerText}>Select Category</Text>
+            <View style={styles.headerContainer}>
+                <TouchableOpacity 
+                    onPress={()=>navigation.navigate('Home')}
+                    style={styles.backButton}
+                >
+                    <Image 
+                        style={{width: 25, height: 25}}
+                        source={require('../assets/back_bn.png')}
+                    />
+                </TouchableOpacity>
+                <Text style={styles.headerText}>Select Category</Text>
+            </View>
 
             {/* Category View */}
             <View style={styles.categoryContainer}>
@@ -78,15 +90,24 @@ export default SelectQuiz;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#142850',
+        backgroundColor: '#06173B',
         padding: 12,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 13,
+        paddingBottom: 25,
+    },
+    backButton: {
+        position: 'absolute',
+        left: 5,
+        top: 16
     },
     headerText: {
         color: 'white',
-        alignSelf: 'center',
-        paddingTop: 10,
-        paddingBottom: 18,
-        fontSize: 24,
+        fontSize: 22,
         fontFamily: 'Ubuntu-Medium'
     },
     categoryContainer: {

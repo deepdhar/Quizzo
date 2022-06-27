@@ -13,7 +13,7 @@ export default Title
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: 16,
+        paddingTop: 35,
         justifyContent: 'center',
         alignItems: 'center'
     },

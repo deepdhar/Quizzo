@@ -46,7 +46,7 @@ const Result = ({route}) => {
             <TouchableOpacity onPress={()=>navigation.navigate('Home')}
                 style={styles.button}
             >
-                <Text style={styles.buttonText}>Home</Text>
+                <Text style={styles.buttonText}>Go to Home</Text>
             </TouchableOpacity>
 
         </SafeAreaView>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,
         height: '100%',
-        backgroundColor: '#142850',
+        backgroundColor: '#06173B',
     },
     header: {
         alignItems: 'center',
@@ -92,13 +92,13 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: '#1A759F',
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 8,
         alignItems: 'center',
         marginBottom: 30,
         marginTop: 27
     },
     buttonText: {
-        fontSize: 22,
+        fontSize: 20,
         fontFamily: 'Ubuntu-Medium',
         color: 'white'
     },

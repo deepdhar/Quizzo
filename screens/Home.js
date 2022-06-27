@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,
         height: '100%',
-        backgroundColor: '#142850'
+        backgroundColor: '#06173B'
     },
     banner: {
         height: 350,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: '#1A759F',
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 8,
         alignItems: 'center',
         marginBottom: 30
     },

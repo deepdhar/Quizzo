@@ -136,10 +136,10 @@ export default Quiz
 
 const styles = StyleSheet.create({
     container: {
-        padding: 12,
+        paddingTop: 10,
         paddingHorizontal: 20,
         height: '100%',
-        backgroundColor: '#142850'
+        backgroundColor: '#06173B'
     },
     parent: {
         flex: 1,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 15,
         marginVertical: 12,
-        backgroundColor: '#34A0A4',
+        backgroundColor: '#2F9D90',
         borderRadius: 12,
         borderWidth: 1.5,
         borderColor: 'white'
