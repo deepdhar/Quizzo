@@ -25,7 +25,7 @@ const Home = () => {
                 onPress={()=>navigation.navigate('SelectQuiz')}
                 style={styles.button}
             >
-                <Text style={styles.buttonText}>Start</Text>
+                <Text style={styles.buttonText}>Play</Text>
             </TouchableOpacity>
         </SafeAreaView>
     )
