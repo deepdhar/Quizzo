@@ -1,4 +1,4 @@
-package com.quizzler.newarchitecture.modules;
+package com.deepdhar.quizzo.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

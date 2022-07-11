@@ -1,4 +1,4 @@
-package com.quizzler.newarchitecture;
+package com.deepdhar.quizzo.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.quizzler.BuildConfig;
-import com.quizzler.newarchitecture.components.MainComponentsRegistry;
-import com.quizzler.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.deepdhar.quizzo.BuildConfig;
+import com.deepdhar.quizzo.newarchitecture.components.MainComponentsRegistry;
+import com.deepdhar.quizzo.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

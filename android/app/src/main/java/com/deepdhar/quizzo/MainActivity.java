@@ -1,4 +1,4 @@
-package com.quizzler;
+package com.deepdhar.quizzo;
 
 import android.os.Bundle;
 import com.facebook.react.ReactActivity;

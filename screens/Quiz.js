@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 
@@ -67,46 +67,45 @@ const Quiz = ({route}) => {
     return (
         <View style={styles.container}>
             {isLoading ? <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                    <Text style={{fontSize: 20, color: 'white'}}>HOLD ON...</Text>
-                </View> : questions && (
+                            <Text style={{fontSize: 20, color: 'white'}}>HOLD ON...</Text>
+                        </View> : questions && (
                 <View style={styles.parent}>
-                    <View style={styles.top}>
-                        <Text style={styles.question}>Q. {decodeURIComponent(questions[ques].question)}</Text>
-                    </View>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        {/* Question View */}
+                        <View style={styles.top}>
+                            <Text style={styles.question}>Q. {decodeURIComponent(questions[ques].question)}</Text>
+                        </View>
 
-                    {/* Options View */}
-                    <View style={styles.options}>
-                        <TouchableOpacity onPress={()=>handleSelectedOptions(options[0])}
-                            style={styles.optionButton}
-                        >
-                            <Text style={styles.option}>{decodeURIComponent(options[0])}</Text>
-                        </TouchableOpacity>
+                        {/* Options View */}
+                        <View style={styles.options}>
+                            <TouchableOpacity onPress={()=>handleSelectedOptions(options[0])}
+                                style={styles.optionButton}
+                            >
+                                <Text style={styles.option}>{decodeURIComponent(options[0])}</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity onPress={()=>handleSelectedOptions(options[1])}
-                            style={styles.optionButton}
-                        >
-                            <Text style={styles.option}>{decodeURIComponent(options[1])}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={()=>handleSelectedOptions(options[1])}
+                                style={styles.optionButton}
+                            >
+                                <Text style={styles.option}>{decodeURIComponent(options[1])}</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity onPress={()=>handleSelectedOptions(options[2])}
-                            style={styles.optionButton}
-                        >
-                            <Text style={styles.option}>{decodeURIComponent(options[2])}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={()=>handleSelectedOptions(options[2])}
+                                style={styles.optionButton}
+                            >
+                                <Text style={styles.option}>{decodeURIComponent(options[2])}</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity onPress={()=>handleSelectedOptions(options[3])}
-                            style={styles.optionButton}
-                        >
-                            <Text style={styles.option}>{decodeURIComponent(options[3])}</Text>
-                        </TouchableOpacity>
-                    </View>
+                            <TouchableOpacity onPress={()=>handleSelectedOptions(options[3])}
+                                style={styles.optionButton}
+                            >
+                                <Text style={styles.option}>{decodeURIComponent(options[3])}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
 
+                    {/* Skip Button */}
                     <View style={styles.bottom}>
-                        {/* <TouchableOpacity 
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>PREV</Text>
-                        </TouchableOpacity> */}
 
                         { ques!==9 &&
                         <TouchableOpacity
@@ -125,8 +124,8 @@ const Quiz = ({route}) => {
                         </TouchableOpacity>}
                         
                     </View>
-                </View> 
-            )}
+                </View> )
+            }
 
         </View>
     )
@@ -154,7 +153,7 @@ const styles = StyleSheet.create({
     },
     bottom: {
         flexDirection: 'row',
-        marginBottom: 12,
+        marginBottom: 0,
         paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center'
