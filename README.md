@@ -1,5 +1,5 @@
 <p align="center">
-  <img style="border-width: 0" width="350" height="350" src="https://user-images.githubusercontent.com/53803245/179343013-e919c457-a57a-415c-bad5-28faf6341515.png"/>
+  <img style="border-width: 0" width="300" height="300" src="https://user-images.githubusercontent.com/53803245/179343013-e919c457-a57a-415c-bad5-28faf6341515.png"/>
 </p>
 
 <a href="https://play.google.com/store/apps/details?id=com.deepdhar.quizzo">
