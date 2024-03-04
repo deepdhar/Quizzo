@@ -24,7 +24,7 @@ const Home = () => {
                 onPress={()=>navigation.navigate('SelectQuiz')}
                 style={styles.button}
             >
-                <Text style={styles.buttonText}>Play</Text>
+                <Text style={styles.buttonText}>Play Now</Text>
             </TouchableOpacity>
         </SafeAreaView>
     )
@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#06173B'
     },
     banner: {
-        height: 350,
-        width: 350
+        height: 300,
+        width: 300
     },
     bannerContainer: {
         justifyContent: 'center',
@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         backgroundColor: '#1A759F',
-        padding: 16,
-        borderRadius: 8,
+        padding: 20,
+        borderRadius: 15,
         alignItems: 'center',
         marginBottom: 30
     },
     buttonText: {
-        fontSize: 22,
+        fontSize: 20,
         color: 'white',
         fontFamily: 'Ubuntu-Medium'
     }
