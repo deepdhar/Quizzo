@@ -45,5 +45,6 @@ LOCAL_SHARED_LIBRARIES := \
   libyoga
 
 LOCAL_CFLAGS := -DLOG_TAG=\"ReactNative\" -fexceptions -frtti -std=c++17 -Wall
+LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
 
 include $(BUILD_SHARED_LIBRARY)
