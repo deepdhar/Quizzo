@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,8 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
 import {decodeText} from '../utils/decoder';
+import {recordGameFinished} from '../utils/gameStorage';
+import {syncPlayerToLeaderboard} from '../utils/leaderboardService';
 
 const Result = ({route}) => {
   const navigation = useNavigation();
@@ -24,11 +26,23 @@ const Result = ({route}) => {
   } = route.params || {};
 
   const [showReview, setShowReview] = useState(false);
+  const [sessionStats, setSessionStats] = useState(null);
 
   const total = totalQuestions || 10;
   const correctCount = Math.round(score / 10);
   const wrongCount = total - correctCount;
   const accuracy = Math.round((correctCount / total) * 100);
+
+  useEffect(() => {
+    // Record game in persistent storage and check level up
+    recordGameFinished(score).then(updated => {
+      if (updated) {
+        setSessionStats(updated);
+        // Sync new stats to Supabase Real-Time Leaderboard
+        syncPlayerToLeaderboard();
+      }
+    });
+  }, [score]);
 
   let starRating = '⭐';
   let celebrationTitle = 'GOOD EFFORT! 💪';
@@ -65,6 +79,20 @@ const Result = ({route}) => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
+        {/* Level Up Banner if leveled up */}
+        {sessionStats && sessionStats.hasLeveledUp && (
+          <View style={styles.levelUpBanner}>
+            <Text style={styles.levelUpEmoji}>🎉</Text>
+            <View style={styles.levelUpInfo}>
+              <Text style={styles.levelUpTitle}>LEVEL UP!</Text>
+              <Text style={styles.levelUpSubtitle}>
+                You reached Level {sessionStats.levelInfo.level} •{' '}
+                {sessionStats.levelInfo.title}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Trophy & Celebration Header */}
         <View style={styles.celebrationCard}>
           <View style={styles.trophyCircle}>
@@ -80,8 +108,8 @@ const Result = ({route}) => {
         <View style={styles.statsGrid}>
           <View style={[styles.statBox, styles.scoreBox]}>
             <Text style={styles.statIcon}>⭐</Text>
-            <Text style={styles.statValue}>{score} XP</Text>
-            <Text style={styles.statLabel}>TOTAL SCORE</Text>
+            <Text style={styles.statValue}>+{score} XP</Text>
+            <Text style={styles.statLabel}>POINTS EARNED</Text>
           </View>
 
           <View style={[styles.statBox, styles.accuracyBox]}>
@@ -115,6 +143,15 @@ const Result = ({route}) => {
             color="#10B981"
             shadowColor="#059669"
             size="large"
+            style={styles.actionBtn}
+          />
+
+          <Button3D
+            title="GLOBAL LEADERBOARD 🏆"
+            onPress={() => navigation.navigate('Leaderboard')}
+            color="#A855F7"
+            shadowColor="#7E22CE"
+            size="medium"
             style={styles.actionBtn}
           />
 
@@ -230,6 +267,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 32,
+  },
+  levelUpBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    borderWidth: 1.5,
+    borderColor: '#F59E0B',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 16,
+  },
+  levelUpEmoji: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  levelUpInfo: {
+    flex: 1,
+  },
+  levelUpTitle: {
+    color: '#FBBF24',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+  },
+  levelUpSubtitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: 'Ubuntu-Regular',
+    marginTop: 2,
   },
   celebrationCard: {
     backgroundColor: 'rgba(30, 41, 59, 0.85)',

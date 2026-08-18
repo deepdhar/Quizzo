@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Animated,
+  Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import ProgressBar from '../components/ProgressBar';
@@ -15,6 +16,7 @@ import TimerBadge from '../components/TimerBadge';
 import QuitModal from '../components/QuitModal';
 import Button3D from '../components/Button3D';
 import {decodeText} from '../utils/decoder';
+import {getPlayerStats, apply5050Lifeline} from '../utils/gameStorage';
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 const QUESTION_TIME = 15;
@@ -49,12 +51,26 @@ const Quiz = ({route}) => {
   const [isAnswered, setIsAnswered] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
 
+  // Lifelines state
+  const [lifelinesCount, setLifelinesCount] = useState(3);
+  const [eliminatedOptions, setEliminatedOptions] = useState([]);
+  const [lifelineUsedInCurrentQ, setLifelineUsedInCurrentQ] = useState(false);
+
   // Timer state
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
   const [quitModalVisible, setQuitModalVisible] = useState(false);
 
   // Toast animation for +10 XP
   const scoreToastAnim = useRef(new Animated.Value(0)).current;
+
+  // Load initial lifelines count
+  useEffect(() => {
+    getPlayerStats().then(s => {
+      if (s) {
+        setLifelinesCount(s.lifelines);
+      }
+    });
+  }, []);
 
   const showScoreToast = () => {
     scoreToastAnim.setValue(0);
@@ -97,6 +113,8 @@ const Quiz = ({route}) => {
         setTimeLeft(QUESTION_TIME);
         setIsAnswered(false);
         setSelectedOption(null);
+        setEliminatedOptions([]);
+        setLifelineUsedInCurrentQ(false);
       } else {
         setHasError(true);
       }
@@ -119,6 +137,8 @@ const Quiz = ({route}) => {
         setOptions(generateOptionsAndShuffle(questions[nextIndex]));
         setSelectedOption(null);
         setIsAnswered(false);
+        setEliminatedOptions([]);
+        setLifelineUsedInCurrentQ(false);
         setTimeLeft(QUESTION_TIME);
       } else {
         // Quiz finished
@@ -190,8 +210,33 @@ const Quiz = ({route}) => {
     return () => clearInterval(timer);
   }, [isLoading, isAnswered, ques, questions, handleTimeOut]);
 
+  // 50:50 Lifeline action
+  const handleUse5050 = async () => {
+    if (isAnswered || lifelineUsedInCurrentQ || options.length <= 2) {
+      return;
+    }
+
+    const currentQ = questions[ques];
+    const incorrect = options.filter(o => o !== currentQ.correct_answer);
+
+    if (incorrect.length < 2) {
+      return;
+    }
+
+    const result = await apply5050Lifeline();
+    if (result.success) {
+      setLifelinesCount(result.remainingLifelines);
+      // Pick 2 random incorrect options to eliminate
+      const toEliminate = shuffleArray(incorrect).slice(0, 2);
+      setEliminatedOptions(toEliminate);
+      setLifelineUsedInCurrentQ(true);
+    } else {
+      Alert.alert('50:50 Lifeline', result.reason);
+    }
+  };
+
   const handleSelectedOption = option => {
-    if (isAnswered) {
+    if (isAnswered || eliminatedOptions.includes(option)) {
       return;
     }
 
@@ -313,6 +358,21 @@ const Quiz = ({route}) => {
           </Text>
         </View>
 
+        {/* 50:50 Lifeline Button */}
+        <TouchableOpacity
+          style={[
+            styles.lifelineBtn,
+            (lifelineUsedInCurrentQ || options.length <= 2) &&
+              styles.disabledLifeline,
+          ]}
+          disabled={isAnswered || lifelineUsedInCurrentQ || options.length <= 2}
+          onPress={handleUse5050}>
+          <Text style={styles.lifelineBtnIcon}>🎲</Text>
+          <Text style={styles.lifelineBtnText}>
+            50:50 {lifelinesCount > 0 ? `(${lifelinesCount})` : '(30 XP)'}
+          </Text>
+        </TouchableOpacity>
+
         <View style={styles.scorePill}>
           <Text style={styles.scorePillIcon}>⭐</Text>
           <Text style={styles.scorePillText}>{score} XP</Text>
@@ -363,6 +423,7 @@ const Quiz = ({route}) => {
             const decodedOpt = decodeText(opt);
             const isCorrectOption = opt === currentQuestion.correct_answer;
             const isUserSelected = opt === selectedOption;
+            const isEliminated = eliminatedOptions.includes(opt);
 
             let buttonBg = 'rgba(30, 41, 59, 0.85)';
             let borderColor = 'rgba(255, 255, 255, 0.12)';
@@ -370,7 +431,11 @@ const Quiz = ({route}) => {
             let textColor = '#FFFFFF';
             let statusIcon = null;
 
-            if (isAnswered) {
+            if (isEliminated) {
+              buttonBg = 'rgba(15, 23, 42, 0.4)';
+              borderColor = 'rgba(255, 255, 255, 0.05)';
+              textColor = '#475569';
+            } else if (isAnswered) {
               if (isCorrectOption) {
                 buttonBg = 'rgba(16, 185, 129, 0.25)';
                 borderColor = '#10B981';
@@ -388,7 +453,7 @@ const Quiz = ({route}) => {
               <TouchableOpacity
                 key={index}
                 activeOpacity={0.8}
-                disabled={isAnswered}
+                disabled={isAnswered || isEliminated}
                 onPress={() => handleSelectedOption(opt)}
                 style={[
                   styles.optionButton,
@@ -396,6 +461,7 @@ const Quiz = ({route}) => {
                     backgroundColor: buttonBg,
                     borderColor: borderColor,
                   },
+                  isEliminated && styles.eliminatedOption,
                 ]}>
                 <View
                   style={[
@@ -407,8 +473,13 @@ const Quiz = ({route}) => {
                   </Text>
                 </View>
 
-                <Text style={[styles.optionText, {color: textColor}]}>
-                  {decodedOpt}
+                <Text
+                  style={[
+                    styles.optionText,
+                    {color: textColor},
+                    isEliminated && styles.eliminatedText,
+                  ]}>
+                  {isEliminated ? '— Eliminated —' : decodedOpt}
                 </Text>
               </TouchableOpacity>
             );
@@ -457,36 +528,61 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeText: {
     color: '#94A3B8',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.3)',
-    maxWidth: 130,
+    maxWidth: 95,
   },
   categoryPillIcon: {
-    fontSize: 13,
-    marginRight: 4,
+    fontSize: 12,
+    marginRight: 3,
   },
   categoryPillText: {
     color: '#38BDF8',
+    fontSize: 11,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+  },
+  lifelineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#A855F7',
+  },
+  disabledLifeline: {
+    opacity: 0.4,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  lifelineBtnIcon: {
     fontSize: 12,
+    marginRight: 3,
+  },
+  lifelineBtnText: {
+    color: '#C084FC',
+    fontSize: 11,
     fontWeight: 'bold',
     fontFamily: 'Ubuntu-Medium',
   },
@@ -494,19 +590,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(245, 158, 11, 0.3)',
   },
   scorePillIcon: {
-    fontSize: 13,
-    marginRight: 4,
+    fontSize: 12,
+    marginRight: 3,
   },
   scorePillText: {
     color: '#FBBF24',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     fontFamily: 'Ubuntu-Medium',
   },
@@ -577,6 +673,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
     borderWidth: 2,
+  },
+  eliminatedOption: {
+    opacity: 0.35,
+  },
+  eliminatedText: {
+    fontStyle: 'italic',
+    color: '#64748B',
   },
   optionLetterBadge: {
     width: 34,
