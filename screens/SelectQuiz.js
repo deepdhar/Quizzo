@@ -1,160 +1,342 @@
-import { useNavigation } from '@react-navigation/native';
-import React from 'react'
-import { 
-    Image,
-    StyleSheet, 
-    Text, 
-    View,
-    TouchableOpacity
-} from 'react-native'
+import React, {useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+
+const {width} = Dimensions.get('window');
+const CARD_WIDTH = (width - 52) / 2;
+
+const CATEGORIES = [
+  {
+    id: '18',
+    name: 'Computers',
+    icon: '💻',
+    color: '#4F46E5',
+    shadow: '#3730A3',
+    description: 'Tech & Code',
+  },
+  {
+    id: '22',
+    name: 'Geography',
+    icon: '🌍',
+    color: '#059669',
+    shadow: '#047857',
+    description: 'Maps & Earth',
+  },
+  {
+    id: '21',
+    name: 'Sports',
+    icon: '⚽',
+    color: '#EA580C',
+    shadow: '#C2410C',
+    description: 'Games & Stars',
+  },
+  {
+    id: '23',
+    name: 'History',
+    icon: '🏛️',
+    color: '#9333EA',
+    shadow: '#7E22CE',
+    description: 'Past Legends',
+  },
+  {
+    id: '27',
+    name: 'Animals',
+    icon: '🦁',
+    color: '#0891B2',
+    shadow: '#0E7490',
+    description: 'Wild & Pets',
+  },
+  {
+    id: '17',
+    name: 'Science',
+    icon: '🔬',
+    color: '#2563EB',
+    shadow: '#1D4ED8',
+    description: 'Space & Lab',
+  },
+  {
+    id: '11',
+    name: 'Movies',
+    icon: '🎬',
+    color: '#DC2626',
+    shadow: '#B91C1C',
+    description: 'Cinema & Pop',
+  },
+  {
+    id: '20',
+    name: 'Mythology',
+    icon: '⚡',
+    color: '#D97706',
+    shadow: '#B45309',
+    description: 'Gods & Lore',
+  },
+];
+
+const DIFFICULTIES = [
+  {key: 'easy', label: 'Easy', icon: '🌱', activeColor: '#10B981'},
+  {key: 'medium', label: 'Medium', icon: '⚡', activeColor: '#F59E0B'},
+  {key: 'hard', label: 'Hard', icon: '🔥', activeColor: '#EF4444'},
+];
 
 const SelectQuiz = () => {
+  const navigation = useNavigation();
+  const [difficulty, setDifficulty] = useState('medium');
 
-    const navigation = useNavigation();
+  const handleCategoryPress = category => {
+    const url = `https://opentdb.com/api.php?amount=10&category=${category.id}&difficulty=${difficulty}&type=multiple&encode=url3986`;
+    navigation.navigate('Quiz', {
+      url,
+      categoryName: category.name,
+      categoryIcon: category.icon,
+      difficulty,
+    });
+  };
 
-    const computersURL = "https://opentdb.com/api.php?amount=10&category=18&difficulty=medium&type=multiple&encode=url3986";
-    const geographyURL = "https://opentdb.com/api.php?amount=10&category=22&difficulty=medium&type=multiple&encode=url3986";
-    const sportsURL = "https://opentdb.com/api.php?amount=10&category=21&difficulty=medium&type=multiple&encode=url3986";
-    const historyURL = "https://opentdb.com/api.php?amount=10&category=23&difficulty=medium&type=multiple&encode=url3986";
-    const animalsURL = "https://opentdb.com/api.php?amount=10&category=27&difficulty=medium&type=multiple&encode=url3986";
-    const mythologyURL = "https://opentdb.com/api.php?amount=10&category=20&difficulty=medium&type=multiple&encode=url3986";
-
+  const renderCategoryCard = ({item}) => {
     return (
-        <View style={styles.container}>
-            <View style={styles.headerContainer}>
-                <TouchableOpacity 
-                    onPress={()=>navigation.navigate('Home')}
-                    style={styles.backButton}
-                >
-                    <Image 
-                        style={{width: 25, height: 25}}
-                        source={require('../assets/back_bn.png')}
-                    />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>Select Category</Text>
-            </View>
-
-            {/* Category View */}
-            <View style={styles.categoryContainer}>
-
-                <View style={styles.categoryRow}>
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: computersURL})}
-                        style={[styles.button, {backgroundColor: '#726A95'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/desktop-computer-vconcept-illustration_114360-12153.jpg?size=338&ext=jpg&ga=GA1.1.1395880969.1709510400&semt=ais'}}
-                        />
-                        <Text style={styles.buttonText}>Computers</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: geographyURL})} 
-                        style={[styles.button, {backgroundColor: '#519872'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/earth-map-linear-composition_1284-34070.jpg?t=st=1709575055~exp=1709578655~hmac=d5e31ca114621ec2cb7e17da6fe77fbd7f2ea662fd3de1a79eedb356b35ac3d1&w=1380'}}
-                        />
-                        <Text style={styles.buttonText}>Geography</Text>
-                    </TouchableOpacity>
-                </View>
-                
-                <View style={styles.categoryRow}>
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: sportsURL})}
-                        style={[styles.button, {backgroundColor: '#FA7D09'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/flat-design-man-playing-football_52683-126622.jpg?t=st=1709575140~exp=1709578740~hmac=4f139d13ac048b81e1621e7a1629167cadfe96fc4dbb0f1db268222430899c89&w=826'}}
-                        />
-                        <Text style={styles.buttonText}>Sports</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: historyURL})}
-                        style={[styles.button, {backgroundColor: '#734046'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/shivaji-maharaja-illustration-concept_23-2148472300.jpg?t=st=1709575178~exp=1709578778~hmac=274d73da7e1e86f63811cd28a5dc8737772c54c1e36850bf0342d52258dcac49&w=826'}}
-                        />
-                        <Text style={styles.buttonText}>History</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.categoryRow}>
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: animalsURL})}
-                        style={[styles.button, {backgroundColor: '#03C4A1'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/nice-lion_1196-396.jpg?t=st=1709575210~exp=1709578810~hmac=b853825b0262d46dcb3206ae52c2a11960639e14608ac64879b6456310a9b744&w=826'}}
-                        />
-                        <Text style={styles.buttonText}>Animals</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={()=>navigation.navigate('Quiz',{url: mythologyURL})}
-                        style={[styles.button, {backgroundColor: '#B5076B'}]}
-                    >
-                        <Image
-                            style={{width: 120, height: 120, borderRadius: 360, marginBottom: 12}}
-                            source={{uri: 'https://img.freepik.com/free-vector/hand-drawn-paleolithic-period-illustration_23-2150146759.jpg?t=st=1709575239~exp=1709578839~hmac=581dd4f9aafb91ac988416169259b83037871f1544f74e01a4d86a0bfebc8987&w=996'}}
-                        />
-                        <Text style={styles.buttonText}>Mythology</Text>
-                    </TouchableOpacity>
-                </View>
-
-            </View>
-
+      <TouchableOpacity
+        style={[
+          styles.categoryCard,
+          {
+            backgroundColor: item.color,
+            borderBottomColor: item.shadow,
+          },
+        ]}
+        activeOpacity={0.85}
+        onPress={() => handleCategoryPress(item)}>
+        <View style={styles.iconCircle}>
+          <Text style={styles.categoryIcon}>{item.icon}</Text>
         </View>
-    )
-}
+        <Text style={styles.categoryTitle}>{item.name}</Text>
+        <Text style={styles.categoryDesc}>{item.description}</Text>
+        <View style={styles.questionsPill}>
+          <Text style={styles.questionsPillText}>10 Qs • +100 XP</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Home')}
+          style={styles.backButton}
+          hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
+          <Text style={styles.backArrow}>‹</Text>
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Choose Category</Text>
+          <Text style={styles.headerSubtitle}>Select your trivia arena</Text>
+        </View>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      {/* Difficulty Selector */}
+      <View style={styles.difficultyContainer}>
+        <Text style={styles.difficultyLabel}>SELECT DIFFICULTY</Text>
+        <View style={styles.difficultyRow}>
+          {DIFFICULTIES.map(diff => {
+            const isSelected = difficulty === diff.key;
+            return (
+              <TouchableOpacity
+                key={diff.key}
+                style={[
+                  styles.diffPill,
+                  isSelected && {
+                    backgroundColor: diff.activeColor,
+                    borderColor: diff.activeColor,
+                  },
+                ]}
+                activeOpacity={0.8}
+                onPress={() => setDifficulty(diff.key)}>
+                <Text style={styles.diffIcon}>{diff.icon}</Text>
+                <Text
+                  style={[
+                    styles.diffText,
+                    isSelected && styles.diffTextSelected,
+                  ]}>
+                  {diff.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* 2-Column Categories Grid */}
+      <FlatList
+        data={CATEGORIES}
+        keyExtractor={item => item.id}
+        renderItem={renderCategoryCard}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
+  );
+};
 
 export default SelectQuiz;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#06173B',
-        padding: 12,
-    },
-    headerContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingTop: 13,
-        paddingBottom: 25,
-    },
-    backButton: {
-        position: 'absolute',
-        left: 5,
-        top: 16
-    },
-    headerText: {
-        color: 'white',
-        fontSize: 22,
-        fontFamily: 'Ubuntu-Medium'
-    },
-    categoryContainer: {
-        flex: 1,
-    },
-    categoryRow: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        height: '100%',
-        marginBottom: 10
-    },
-    button: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 5,
-        padding: 18,
-        borderRadius: 10,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 18,
-        fontFamily: 'Ubuntu-Regular',
-    }
-})
+  container: {
+    flex: 1,
+    backgroundColor: '#06173B',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 14,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  backArrow: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: -4,
+  },
+  headerTitleContainer: {
+    alignItems: 'center',
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+  },
+  headerSubtitle: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontFamily: 'Ubuntu-Regular',
+    marginTop: 2,
+  },
+  headerSpacer: {
+    width: 38,
+  },
+  difficultyContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  difficultyLabel: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  difficultyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  diffPill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    marginHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  diffIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  diffText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+  },
+  diffTextSelected: {
+    color: '#FFFFFF',
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  categoryCard: {
+    width: CARD_WIDTH,
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  iconCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  categoryIcon: {
+    fontSize: 28,
+  },
+  categoryTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  categoryDesc: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 11,
+    fontFamily: 'Ubuntu-Regular',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  questionsPill: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  questionsPillText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+    fontFamily: 'Ubuntu-Medium',
+  },
+});
