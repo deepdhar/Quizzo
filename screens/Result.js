@@ -35,14 +35,14 @@ const Result = ({route}) => {
 
   useEffect(() => {
     // Record game in persistent storage and check level up
-    recordGameFinished(score).then(updated => {
+    recordGameFinished(score, categoryName, correctCount).then(updated => {
       if (updated) {
         setSessionStats(updated);
         // Sync new stats to Supabase Real-Time Leaderboard
         syncPlayerToLeaderboard();
       }
     });
-  }, [score]);
+  }, [score, categoryName, correctCount]);
 
   let starRating = '⭐';
   let celebrationTitle = 'GOOD EFFORT! 💪';
