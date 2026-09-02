@@ -140,8 +140,8 @@ const Result = ({route}) => {
           <Button3D
             title="PLAY AGAIN 🔄"
             onPress={handlePlayAgain}
-            color="#10B981"
-            shadowColor="#059669"
+            color="#63C174"
+            shadowColor="#4FA05D"
             size="large"
             style={styles.actionBtn}
           />
@@ -149,8 +149,8 @@ const Result = ({route}) => {
           <Button3D
             title="GLOBAL LEADERBOARD 🏆"
             onPress={() => navigation.navigate('Leaderboard')}
-            color="#A855F7"
-            shadowColor="#7E22CE"
+            color="#8B6DE8"
+            shadowColor="#6A4FB8"
             size="medium"
             style={styles.actionBtn}
           />
@@ -158,8 +158,8 @@ const Result = ({route}) => {
           <Button3D
             title="CHOOSE CATEGORY 🎯"
             onPress={() => navigation.navigate('SelectQuiz')}
-            color="#38BDF8"
-            shadowColor="#0284C7"
+            color="#4F7DF3"
+            shadowColor="#3A60C4"
             size="medium"
             style={styles.actionBtn}
           />
@@ -261,7 +261,7 @@ export default Result;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#F7F9FC',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -271,9 +271,9 @@ const styles = StyleSheet.create({
   levelUpBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    backgroundColor: 'rgba(255, 200, 87, 0.15)',
     borderWidth: 1.5,
-    borderColor: '#F59E0B',
+    borderColor: '#FFC857',
     borderRadius: 18,
     padding: 14,
     marginBottom: 16,
@@ -286,35 +286,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   levelUpTitle: {
-    color: '#FBBF24',
+    color: '#E6AC00',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   levelUpSubtitle: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 13,
-    fontFamily: 'Ubuntu-Regular',
     marginTop: 2,
   },
   celebrationCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.85)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 24,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   trophyCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(255, 200, 87, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderColor: 'rgba(255, 200, 87, 0.4)',
     marginBottom: 10,
   },
   trophyEmoji: {
@@ -326,17 +329,15 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   titleText: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 24,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 6,
     textAlign: 'center',
   },
   subtitleText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
-    fontFamily: 'Ubuntu-Regular',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -348,41 +349,49 @@ const styles = StyleSheet.create({
   },
   statBox: {
     width: '48%',
-    backgroundColor: 'rgba(30, 41, 59, 0.75)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     padding: 14,
     alignItems: 'center',
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   scoreBox: {
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#FFC857',
   },
   accuracyBox: {
-    borderColor: 'rgba(56, 189, 248, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#4F7DF3',
   },
   correctBox: {
-    borderColor: 'rgba(16, 185, 129, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#63C174',
   },
   incorrectBox: {
-    borderColor: 'rgba(239, 68, 68, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#EF4444',
   },
   statIcon: {
     fontSize: 20,
     marginBottom: 4,
   },
   statValue: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 22,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 2,
   },
   statLabel: {
-    color: '#64748B',
+    color: '#7A8B99',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     letterSpacing: 0.5,
   },
   actionsContainer: {
@@ -393,12 +402,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reviewSection: {
-    backgroundColor: 'rgba(30, 41, 59, 0.65)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#E2E8F0',
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -415,26 +429,24 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   reviewHeaderText: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   reviewBadge: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: 'rgba(79, 125, 243, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
     marginLeft: 8,
   },
   reviewBadgeText: {
-    color: '#06173B',
+    color: '#4F7DF3',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   reviewArrow: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -443,14 +455,14 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   reviewItemCard: {
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    backgroundColor: '#F7F9FC',
     borderRadius: 14,
     padding: 12,
     marginBottom: 10,
     borderLeftWidth: 4,
   },
   reviewCorrectCard: {
-    borderLeftColor: '#10B981',
+    borderLeftColor: '#63C174',
   },
   reviewIncorrectCard: {
     borderLeftColor: '#EF4444',
@@ -461,45 +473,42 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   reviewQIndex: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontWeight: 'bold',
     fontSize: 12,
-    fontFamily: 'Ubuntu-Medium',
   },
   reviewItemStatus: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontWeight: 'bold',
     fontSize: 11,
-    fontFamily: 'Ubuntu-Medium',
   },
   reviewQuestionText: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 14,
     fontWeight: '500',
-    fontFamily: 'Ubuntu-Medium',
     lineHeight: 20,
     marginBottom: 8,
   },
   answerComparison: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   answerRow: {
     marginVertical: 2,
   },
   answerLabel: {
-    color: '#64748B',
+    color: '#7A8B99',
     fontSize: 11,
-    fontFamily: 'Ubuntu-Regular',
   },
   answerValue: {
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   correctValue: {
-    color: '#10B981',
+    color: '#63C174',
   },
   incorrectValue: {
     color: '#EF4444',
@@ -509,9 +518,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   homeLinkText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
 });

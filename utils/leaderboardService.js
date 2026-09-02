@@ -41,18 +41,6 @@ export const AVATAR_OPTIONS = [
   '🐯',
 ];
 
-const DEFAULT_GLOBAL_LEADERBOARD = [
-  {id: '1', name: 'BrainiacMax', avatar: '👑', xp: 4820, level: 7, streak: 14},
-  {id: '2', name: 'TriviaQueen', avatar: '🦄', xp: 4210, level: 6, streak: 11},
-  {id: '3', name: 'QuizMaster99', avatar: '⚡', xp: 3650, level: 6, streak: 9},
-  {id: '4', name: 'SpeedyThinker', avatar: '🚀', xp: 2980, level: 5, streak: 8},
-  {id: '5', name: 'CosmicOwl', avatar: '🦉', xp: 2450, level: 5, streak: 6},
-  {id: '6', name: 'CyberPanda', avatar: '🐼', xp: 1980, level: 4, streak: 5},
-  {id: '7', name: 'StarGazer', avatar: '🦊', xp: 1620, level: 4, streak: 4},
-  {id: '8', name: 'RoboSmart', avatar: '🤖', xp: 1240, level: 4, streak: 3},
-  {id: '9', name: 'LionHeart', avatar: '🦁', xp: 950, level: 3, streak: 2},
-  {id: '10', name: 'ApexSeeker', avatar: '🐯', xp: 720, level: 3, streak: 2},
-];
 
 /**
  * Gets or initializes the user profile.
@@ -185,26 +173,8 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
       }
     }
 
-    // Fallback if cloud has no records yet or Supabase isn't configured
     if (cloudPlayers.length === 0) {
-      const multiplier = timeframe === 'weekly' ? 0.35 : 1;
-      const userEntry = {
-        id: profile.id,
-        name: profile.name || 'Player One',
-        avatar: profile.avatar || '🚀',
-        xp: Math.round((stats.totalXP || 0) * multiplier),
-        level: stats?.levelInfo?.level || 1,
-        streak: stats.streak || 0,
-        isCurrentUser: true,
-      };
-
-      const others = DEFAULT_GLOBAL_LEADERBOARD.map(p => ({
-        ...p,
-        xp: Math.round(p.xp * multiplier),
-        isCurrentUser: false,
-      }));
-
-      cloudPlayers = [...others, userEntry].sort((a, b) => b.xp - a.xp);
+      throw new Error('Leaderboard is currently down or unreachable.');
     }
 
     // Assign ranking indices
@@ -222,7 +192,7 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
       isRealtime: hasSupabase,
     };
   } catch (error) {
-    return {leaderboard: [], userRankInfo: null, isRealtime: false};
+    throw error;
   }
 };
 

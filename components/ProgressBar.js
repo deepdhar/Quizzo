@@ -4,8 +4,8 @@ import {StyleSheet, View, Text, Animated} from 'react-native';
 const ProgressBar = ({
   current,
   total,
-  color = '#10B981',
-  trackColor = '#1E293B',
+  color = '#63C174', // Positive Green
+  trackColor = '#E2E8F0',
 }) => {
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
@@ -64,24 +64,20 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   labelText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 12,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     letterSpacing: 1,
   },
   percentText: {
-    color: '#38BDF8',
+    color: '#4F7DF3',
     fontSize: 12,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   track: {
     height: 12,
     borderRadius: 10,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   fill: {
     height: '100%',

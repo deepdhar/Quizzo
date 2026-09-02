@@ -11,15 +11,13 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
 import {
   fetchGlobalLeaderboard,
-  getUserProfile,
-  updateUserProfile,
   subscribeToLeaderboardChanges,
-  AVATAR_OPTIONS,
 } from '../utils/leaderboardService';
 
 const Leaderboard = () => {
@@ -32,9 +30,6 @@ const Leaderboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [profileModalVisible, setProfileModalVisible] = useState(false);
-  const [playerName, setPlayerName] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('🚀');
 
   const loadLeaderboard = useCallback(async () => {
     try {
@@ -43,11 +38,15 @@ const Leaderboard = () => {
         setData(result);
       }
     } catch (e) {
-      // Gracefully handle any error
+      Alert.alert(
+        'Error',
+        'Leaderboard is currently down or unreachable. Please try again later.',
+        [{text: 'OK', onPress: () => navigation.goBack()}],
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [timeframe]);
+  }, [timeframe, navigation]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -55,25 +54,9 @@ const Leaderboard = () => {
     setRefreshing(false);
   };
 
-  const loadProfile = async () => {
-    try {
-      const prof = await getUserProfile();
-      if (prof) {
-        setPlayerName(prof.name || 'Player One');
-        setSelectedAvatar(prof.avatar || '🚀');
-      }
-    } catch (e) {
-      // Ignored
-    }
-  };
-
   useEffect(() => {
     loadLeaderboard();
   }, [loadLeaderboard]);
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
 
   // Real-time subscription to cloud changes
   useEffect(() => {
@@ -97,11 +80,6 @@ const Leaderboard = () => {
     };
   }, [loadLeaderboard]);
 
-  const handleSaveProfile = async () => {
-    await updateUserProfile(playerName, selectedAvatar);
-    setProfileModalVisible(false);
-    loadLeaderboard();
-  };
 
   const hasPodium =
     data && Array.isArray(data.leaderboard) && data.leaderboard.length >= 3;
@@ -180,18 +158,11 @@ const Leaderboard = () => {
             <Text style={styles.headerTitle}>Global Leaderboard 🏆</Text>
           </View>
           <Text style={styles.headerSubtitle}>
-            {data.isRealtime
-              ? '🟢 Live Realtime Scores'
-              : 'Compete with trivia masters'}
+            Compete with trivia masters
           </Text>
         </View>
 
-        <TouchableOpacity
-          onPress={() => setProfileModalVisible(true)}
-          style={styles.profileBtn}
-          hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
-          <Text style={styles.profileBtnText}>👤</Text>
-        </TouchableOpacity>
+        <View style={styles.emptyHeaderSpacer} />
       </View>
 
       {/* Timeframe Selector Tabs */}
@@ -337,64 +308,6 @@ const Leaderboard = () => {
         </View>
       )}
 
-      {/* Edit Profile Modal */}
-      <Modal
-        visible={profileModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setProfileModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Edit Player Profile</Text>
-            <Text style={styles.modalSubtitle}>
-              Choose your avatar &amp; player name
-            </Text>
-
-            <View style={styles.avatarPickerRow}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.avatarList}>
-                {AVATAR_OPTIONS.map((av, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={[
-                      styles.avatarPickItem,
-                      selectedAvatar === av && styles.avatarPickItemSelected,
-                    ]}
-                    onPress={() => setSelectedAvatar(av)}>
-                    <Text style={styles.avatarPickEmoji}>{av}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            <TextInput
-              style={styles.nameInput}
-              value={playerName}
-              onChangeText={setPlayerName}
-              placeholder="Enter your nickname"
-              placeholderTextColor="#64748B"
-              maxLength={15}
-            />
-
-            <Button3D
-              title="SAVE PROFILE ✨"
-              onPress={handleSaveProfile}
-              color="#10B981"
-              shadowColor="#059669"
-              size="medium"
-              style={styles.saveProfileBtn}
-            />
-
-            <TouchableOpacity
-              onPress={() => setProfileModalVisible(false)}
-              style={styles.cancelBtn}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -404,7 +317,7 @@ export default Leaderboard;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#F7F9FC',
   },
   header: {
     flexDirection: 'row',
@@ -418,12 +331,19 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backArrow: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 26,
     fontWeight: 'bold',
     marginTop: -4,
@@ -436,37 +356,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   headerSubtitle: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 12,
-    fontFamily: 'Ubuntu-Regular',
     marginTop: 2,
   },
-  profileBtn: {
+  emptyHeaderSpacer: {
     width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(56, 189, 248, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-  },
-  profileBtnText: {
-    fontSize: 18,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     marginHorizontal: 20,
     marginBottom: 12,
     padding: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabButton: {
     flex: 1,
@@ -475,16 +390,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   activeTab: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#4F7DF3',
   },
   tabText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   activeTabText: {
-    color: '#06173B',
+    color: '#FFFFFF',
   },
   loadingBox: {
     flex: 1,
@@ -492,10 +406,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
     marginTop: 12,
-    fontFamily: 'Ubuntu-Medium',
   },
   listContent: {
     paddingHorizontal: 20,
@@ -537,44 +450,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     marginBottom: 6,
+    backgroundColor: '#FFFFFF',
   },
   firstAvatar: {
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: 'rgba(245, 158, 11, 0.25)',
-    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(255, 200, 87, 0.2)',
+    borderColor: '#FFC857',
   },
   secondAvatar: {
-    backgroundColor: 'rgba(148, 163, 184, 0.25)',
-    borderColor: '#94A3B8',
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
   },
   thirdAvatar: {
-    backgroundColor: 'rgba(217, 119, 6, 0.25)',
-    borderColor: '#D97706',
+    backgroundColor: 'rgba(255, 138, 76, 0.2)',
+    borderColor: '#FF8A4C',
   },
   podiumAvatarText: {
     fontSize: 26,
   },
   podiumName: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 12,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 2,
     maxWidth: 90,
   },
   podiumXP: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 11,
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 6,
   },
   podiumXPFirst: {
-    color: '#FBBF24',
+    color: '#E6AC00',
     fontSize: 12,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 6,
   },
   podiumBase: {
@@ -586,69 +497,73 @@ const styles = StyleSheet.create({
   },
   firstBase: {
     height: 90,
-    backgroundColor: 'rgba(245, 158, 11, 0.3)',
+    backgroundColor: 'rgba(255, 200, 87, 0.2)',
     borderWidth: 1.5,
     borderBottomWidth: 0,
-    borderColor: '#F59E0B',
+    borderColor: '#FFC857',
   },
   secondBase: {
     height: 70,
-    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+    backgroundColor: '#F1F5F9',
     borderWidth: 1.5,
     borderBottomWidth: 0,
-    borderColor: '#94A3B8',
+    borderColor: '#CBD5E1',
   },
   thirdBase: {
     height: 55,
-    backgroundColor: 'rgba(217, 119, 6, 0.2)',
+    backgroundColor: 'rgba(255, 138, 76, 0.15)',
     borderWidth: 1.5,
     borderBottomWidth: 0,
-    borderColor: '#D97706',
+    borderColor: '#FF8A4C',
   },
   podiumRankText: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   podiumRankTextFirst: {
-    color: '#FBBF24',
+    color: '#E6AC00',
     fontSize: 22,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   playerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.75)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   currentUserRowHighlight: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: '#4F7DF3',
+    backgroundColor: 'rgba(79, 125, 243, 0.08)',
   },
   rankContainer: {
     width: 32,
   },
   rankNumber: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   avatarCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   avatarEmoji: {
     fontSize: 20,
@@ -661,81 +576,77 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playerName: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginRight: 6,
     maxWidth: 140,
   },
   currentUserText: {
-    color: '#38BDF8',
+    color: '#4F7DF3',
   },
   streakBadge: {
-    color: '#F97316',
+    color: '#FF8A4C',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   levelTag: {
-    color: '#64748B',
+    color: '#7A8B99',
     fontSize: 11,
-    fontFamily: 'Ubuntu-Regular',
     marginTop: 2,
   },
   xpContainer: {
     alignItems: 'flex-end',
   },
   xpText: {
-    color: '#FBBF24',
+    color: '#FFC857',
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   xpLabel: {
-    color: '#64748B',
+    color: '#7A8B99',
     fontSize: 10,
-    fontFamily: 'Ubuntu-Regular',
   },
   stickyUserBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#0F172A',
-    borderTopWidth: 2,
-    borderTopColor: '#38BDF8',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
     paddingVertical: 12,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: -4},
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 10,
   },
   stickyRankBadge: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#4F7DF3',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     marginRight: 10,
   },
   stickyRankText: {
-    color: '#06173B',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 13,
-    fontFamily: 'Ubuntu-Medium',
   },
   stickyAvatarCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   stickyAvatarEmoji: {
     fontSize: 18,
@@ -744,108 +655,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stickyUserName: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   stickyUserSub: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 11,
-    fontFamily: 'Ubuntu-Regular',
   },
   stickyXPBox: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 11, 0.3)',
+    borderColor: '#FFC857',
   },
   stickyXPText: {
-    color: '#FBBF24',
+    color: '#E6AC00',
     fontWeight: 'bold',
     fontSize: 12,
-    fontFamily: 'Ubuntu-Medium',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(5, 15, 38, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    width: '100%',
-    backgroundColor: '#0F172A',
-    borderRadius: 24,
-    padding: 22,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-  },
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
-    marginBottom: 4,
-  },
-  modalSubtitle: {
-    color: '#94A3B8',
-    fontSize: 13,
-    fontFamily: 'Ubuntu-Regular',
-    marginBottom: 16,
-  },
-  avatarPickerRow: {
-    marginBottom: 16,
-    width: '100%',
-  },
-  avatarList: {
-    paddingVertical: 4,
-  },
-  avatarPickItem: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  avatarPickItemSelected: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.25)',
-  },
-  avatarPickEmoji: {
-    fontSize: 24,
-  },
-  nameInput: {
-    width: '100%',
-    backgroundColor: 'rgba(30, 41, 59, 0.9)',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontFamily: 'Ubuntu-Medium',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    marginBottom: 12,
-  },
-  saveProfileBtn: {
-    width: '100%',
-    marginTop: 12,
-  },
-  cancelBtn: {
-    paddingVertical: 10,
-    marginTop: 8,
-  },
-  cancelBtnText: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontFamily: 'Ubuntu-Medium',
   },
 });

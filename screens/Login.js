@@ -203,8 +203,6 @@ const Login = () => {
               <Button3D
                 title={isUsernameLoading ? 'SETTING UP...' : 'LET’S PLAY! 🚀'}
                 onPress={handleStartWithUsername}
-                color="#10B981"
-                shadowColor="#059669"
                 size="large"
                 disabled={isUsernameLoading}
                 style={styles.actionBtn}
@@ -229,7 +227,7 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#4F7DF3',
   },
   keyboardView: {
     flex: 1,
@@ -248,11 +246,11 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(255, 200, 87, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderColor: 'rgba(255, 200, 87, 0.5)',
     marginBottom: 12,
   },
   mascotEmoji: {
@@ -262,20 +260,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 32,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Bold',
     marginBottom: 6,
   },
   appTagline: {
-    color: '#94A3B8',
+    color: '#E2E8F0',
     fontSize: 14,
-    fontFamily: 'Ubuntu-Regular',
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 20,
   },
   modeTabs: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 16,
     padding: 4,
     width: '100%',
@@ -288,25 +284,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   modeTabActive: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   modeTabText: {
-    color: '#94A3B8',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   modeTabTextActive: {
-    color: '#06173B',
+    color: '#4F7DF3',
   },
   cardContainer: {
     width: '100%',
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 20,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   googleHeroBox: {
     alignItems: 'center',
@@ -322,25 +327,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 2,
   },
   heroGoogleLogo: {
     marginRight: 0,
   },
   googleCardTitle: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 19,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 6,
     textAlign: 'center',
   },
   googleCardSubtitle: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 13,
-    fontFamily: 'Ubuntu-Regular',
     textAlign: 'center',
     lineHeight: 18,
     paddingHorizontal: 12,
@@ -350,16 +353,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F7F9FC',
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,
     width: '100%',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginTop: 8,
   },
   buttonDisabled: {
@@ -371,16 +371,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   googleButtonText: {
-    color: '#1F2937',
+    color: '#25324A',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   sectionHeading: {
-    color: '#F8FAFC',
+    color: '#25324A',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 10,
   },
   avatarPickerRow: {
@@ -393,7 +391,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#F7F9FC',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -401,22 +399,21 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   avatarItemSelected: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.25)',
+    borderColor: '#4F7DF3',
+    backgroundColor: 'rgba(79, 125, 243, 0.1)',
   },
   avatarEmoji: {
     fontSize: 24,
   },
   textInput: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: '#F7F9FC',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 15,
-    fontFamily: 'Ubuntu-Medium',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: '#E2E8F0',
     marginBottom: 18,
   },
   actionBtn: {
@@ -426,9 +423,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   guestLinkText: {
-    color: '#94A3B8',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
 });

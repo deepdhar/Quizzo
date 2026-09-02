@@ -22,18 +22,18 @@ const TimerBadge = ({timeLeft}) => {
   }, [timeLeft, pulseAnim]);
 
   // Determine color based on time left
-  let badgeBg = 'rgba(16, 185, 129, 0.2)';
-  let badgeBorder = '#10B981';
-  let textColor = '#34D399';
+  let badgeBg = 'rgba(99, 193, 116, 0.15)';
+  let badgeBorder = '#63C174';
+  let textColor = '#63C174';
 
   if (timeLeft <= 4) {
-    badgeBg = 'rgba(239, 68, 68, 0.25)';
+    badgeBg = 'rgba(239, 68, 68, 0.15)';
     badgeBorder = '#EF4444';
-    textColor = '#F87171';
+    textColor = '#EF4444';
   } else if (timeLeft <= 7) {
-    badgeBg = 'rgba(245, 158, 11, 0.2)';
-    badgeBorder = '#F59E0B';
-    textColor = '#FBBF24';
+    badgeBg = 'rgba(255, 200, 87, 0.15)';
+    badgeBorder = '#FFC857';
+    textColor = '#E6AC00';
   }
 
   return (
@@ -70,6 +70,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
 });

@@ -425,26 +425,30 @@ const Quiz = ({route}) => {
             const isUserSelected = opt === selectedOption;
             const isEliminated = eliminatedOptions.includes(opt);
 
-            let buttonBg = 'rgba(30, 41, 59, 0.85)';
-            let borderColor = 'rgba(255, 255, 255, 0.12)';
-            let badgeBg = 'rgba(255, 255, 255, 0.1)';
-            let textColor = '#FFFFFF';
+            let buttonBg = '#FFFFFF';
+            let borderColor = '#E2E8F0';
+            let badgeBg = '#F7F9FC';
+            let textColor = '#25324A';
+            let badgeTextColor = '#7A8B99';
             let statusIcon = null;
 
             if (isEliminated) {
-              buttonBg = 'rgba(15, 23, 42, 0.4)';
-              borderColor = 'rgba(255, 255, 255, 0.05)';
-              textColor = '#475569';
+              buttonBg = '#F8FAFC';
+              borderColor = '#F1F5F9';
+              textColor = '#94A3B8';
+              badgeTextColor = '#CBD5E1';
             } else if (isAnswered) {
               if (isCorrectOption) {
-                buttonBg = 'rgba(16, 185, 129, 0.25)';
-                borderColor = '#10B981';
-                badgeBg = '#10B981';
+                buttonBg = 'rgba(99, 193, 116, 0.15)';
+                borderColor = '#63C174';
+                badgeBg = '#63C174';
+                badgeTextColor = '#FFFFFF';
                 statusIcon = '✓';
               } else if (isUserSelected) {
-                buttonBg = 'rgba(239, 68, 68, 0.25)';
+                buttonBg = 'rgba(239, 68, 68, 0.15)';
                 borderColor = '#EF4444';
                 badgeBg = '#EF4444';
+                badgeTextColor = '#FFFFFF';
                 statusIcon = '✕';
               }
             }
@@ -468,7 +472,7 @@ const Quiz = ({route}) => {
                     styles.optionLetterBadge,
                     {backgroundColor: badgeBg},
                   ]}>
-                  <Text style={styles.optionLetterText}>
+                  <Text style={[styles.optionLetterText, {color: badgeTextColor}]}>
                     {statusIcon || OPTION_LETTERS[index] || index + 1}
                   </Text>
                 </View>
@@ -517,7 +521,7 @@ export default Quiz;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#F7F9FC',
     paddingHorizontal: 16,
   },
   hudHeader: {
@@ -531,24 +535,31 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   closeText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 15,
     fontWeight: 'bold',
   },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: 'rgba(79, 125, 243, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderColor: 'rgba(79, 125, 243, 0.3)',
     maxWidth: 95,
   },
   categoryPillIcon: {
@@ -556,71 +567,68 @@ const styles = StyleSheet.create({
     marginRight: 3,
   },
   categoryPillText: {
-    color: '#38BDF8',
+    color: '#4F7DF3',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   lifelineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    backgroundColor: 'rgba(139, 109, 232, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#A855F7',
+    borderColor: '#8B6DE8',
   },
   disabledLifeline: {
-    opacity: 0.4,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    opacity: 0.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F1F5F9',
   },
   lifelineBtnIcon: {
     fontSize: 12,
     marginRight: 3,
   },
   lifelineBtnText: {
-    color: '#C084FC',
+    color: '#8B6DE8',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   scorePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 200, 87, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: '#FFC857',
   },
   scorePillIcon: {
     fontSize: 12,
     marginRight: 3,
   },
   scorePillText: {
-    color: '#FBBF24',
+    color: '#E6AC00',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   scrollBody: {
     paddingBottom: 16,
   },
   questionCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 22,
     padding: 20,
     marginVertical: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 6},
-    shadowOpacity: 0.3,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.05,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 3,
   },
   questionMetaRow: {
     flexDirection: 'row',
@@ -628,28 +636,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   difficultyTag: {
-    color: '#38BDF8',
+    color: '#4F7DF3',
     fontSize: 11,
     fontWeight: 'bold',
     letterSpacing: 1,
-    fontFamily: 'Ubuntu-Medium',
   },
   pointsTag: {
-    color: '#10B981',
+    color: '#63C174',
     fontSize: 11,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   questionText: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'Ubuntu-Medium',
     lineHeight: 26,
   },
   scoreToast: {
     alignSelf: 'center',
-    backgroundColor: '#10B981',
+    backgroundColor: '#63C174',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -660,7 +665,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
-    fontFamily: 'Ubuntu-Medium',
   },
   optionsList: {
     marginTop: 6,
@@ -673,13 +677,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   eliminatedOption: {
-    opacity: 0.35,
+    opacity: 0.5,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   eliminatedText: {
     fontStyle: 'italic',
-    color: '#64748B',
+    color: '#94A3B8',
   },
   optionLetterBadge: {
     width: 34,
@@ -690,16 +701,13 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   optionLetterText: {
-    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
   },
   optionText: {
     flex: 1,
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Ubuntu-Regular',
     lineHeight: 22,
   },
   bottomBar: {
@@ -710,52 +718,59 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   disabledSkip: {
     opacity: 0.5,
   },
   skipBtnText: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 13,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     letterSpacing: 0.5,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#F7F9FC',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   loadingCard: {
     width: '100%',
-    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 28,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   loadingEmoji: {
     fontSize: 48,
     marginVertical: 12,
   },
   loadingTitle: {
-    color: '#FFFFFF',
+    color: '#25324A',
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     marginBottom: 6,
   },
   loadingSubtitle: {
-    color: '#94A3B8',
+    color: '#7A8B99',
     fontSize: 14,
     textAlign: 'center',
-    fontFamily: 'Ubuntu-Regular',
     lineHeight: 20,
   },
   retryBtn: {
@@ -766,7 +781,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   chooseAnotherText: {
-    color: '#94A3B8',
-    fontFamily: 'Ubuntu-Medium',
+    color: '#4F7DF3',
+    fontWeight: 'bold',
   },
 });

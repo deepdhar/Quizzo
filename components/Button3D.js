@@ -10,8 +10,8 @@ import {
 const Button3D = ({
   title,
   onPress,
-  color = '#10B981', // Top surface color
-  shadowColor = '#059669', // Darker bevel shadow color
+  color = '#FF8A4C', // Top surface color (CTA)
+  shadowColor = '#E06A26', // Darker bevel shadow color
   textColor = '#FFFFFF',
   icon = null,
   style,
@@ -65,7 +65,7 @@ const Button3D = ({
           style={[
             styles.shadowLayer,
             {
-              backgroundColor: disabled ? '#374151' : shadowColor,
+              backgroundColor: disabled ? '#CBD5E1' : shadowColor,
               borderRadius: isSmall ? 12 : 18,
               bottom: 0,
             },
@@ -77,7 +77,7 @@ const Button3D = ({
           style={[
             styles.topLayer,
             {
-              backgroundColor: disabled ? '#4B5563' : color,
+              backgroundColor: disabled ? '#E2E8F0' : color,
               borderRadius: isSmall ? 12 : 18,
               paddingVertical: isSmall ? 10 : isLarge ? 18 : 14,
               paddingHorizontal: isSmall ? 14 : isLarge ? 24 : 20,
@@ -90,7 +90,7 @@ const Button3D = ({
               style={[
                 styles.title,
                 {
-                  color: disabled ? '#9CA3AF' : textColor,
+                  color: disabled ? '#94A3B8' : textColor,
                   fontSize: isSmall ? 14 : isLarge ? 20 : 17,
                 },
                 textStyle,
@@ -129,7 +129,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
-    fontFamily: 'Ubuntu-Medium',
     letterSpacing: 0.5,
   },
 });

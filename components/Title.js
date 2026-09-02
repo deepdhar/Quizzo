@@ -35,17 +35,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 44,
     fontWeight: 'bold',
-    color: '#38BDF8',
-    fontFamily: 'Pacifico_Regular',
-    textShadowColor: 'rgba(56, 189, 248, 0.4)',
+    color: '#4F7DF3',
+    textShadowColor: 'rgba(79, 125, 243, 0.4)',
     textShadowOffset: {width: 0, height: 4},
     textShadowRadius: 12,
   },
   subtitle: {
     marginTop: 4,
     fontSize: 14,
-    color: '#94A3B8',
-    fontFamily: 'Ubuntu-Medium',
+    color: '#7A8B99',
     letterSpacing: 1,
   },
 });

@@ -13,7 +13,7 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#06173B" barStyle="light-content" />
+      <StatusBar backgroundColor="#4F7DF3" barStyle="light-content" />
       <MyStack />
     </SafeAreaView>
   );
@@ -24,6 +24,6 @@ export default App;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#06173B',
+    backgroundColor: '#4F7DF3',
   },
 });
