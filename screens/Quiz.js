@@ -231,7 +231,7 @@ const Quiz = ({route}) => {
       setEliminatedOptions(toEliminate);
       setLifelineUsedInCurrentQ(true);
     } else {
-      Alert.alert('50:50 Lifeline', result.reason);
+      Alert.alert('Hint', result.reason);
     }
   };
 
@@ -369,7 +369,7 @@ const Quiz = ({route}) => {
           onPress={handleUse5050}>
           <Text style={styles.lifelineBtnIcon}>🎲</Text>
           <Text style={styles.lifelineBtnText}>
-            50:50 {lifelinesCount > 0 ? `(${lifelinesCount})` : '(30 XP)'}
+            Hint {lifelinesCount > 0 ? `(${lifelinesCount})` : '(30 XP)'}
           </Text>
         </TouchableOpacity>
 
@@ -439,13 +439,13 @@ const Quiz = ({route}) => {
               badgeTextColor = '#CBD5E1';
             } else if (isAnswered) {
               if (isCorrectOption) {
-                buttonBg = 'rgba(99, 193, 116, 0.15)';
+                buttonBg = '#E4F4E7';
                 borderColor = '#63C174';
                 badgeBg = '#63C174';
                 badgeTextColor = '#FFFFFF';
                 statusIcon = '✓';
               } else if (isUserSelected) {
-                buttonBg = 'rgba(239, 68, 68, 0.15)';
+                buttonBg = '#FDE8E8';
                 borderColor = '#EF4444';
                 badgeBg = '#EF4444';
                 badgeTextColor = '#FFFFFF';
@@ -466,6 +466,7 @@ const Quiz = ({route}) => {
                     borderColor: borderColor,
                   },
                   isEliminated && styles.eliminatedOption,
+                  isAnswered && styles.answeredOption,
                 ]}>
                 <View
                   style={[
@@ -685,6 +686,10 @@ const styles = StyleSheet.create({
   },
   eliminatedOption: {
     opacity: 0.5,
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  answeredOption: {
     elevation: 0,
     shadowOpacity: 0,
   },

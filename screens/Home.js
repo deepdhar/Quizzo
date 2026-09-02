@@ -94,11 +94,6 @@ const Home = () => {
             </Text>
           </View>
 
-          <View style={[styles.hudBadge, styles.lifelineBadge]}>
-            <Text style={styles.hudIcon}>🎲</Text>
-            <Text style={styles.lifelineText}>{stats.lifelines} 50:50</Text>
-          </View>
-
           <View style={[styles.hudBadge, styles.xpBadge]}>
             <Text style={styles.hudIcon}>⭐</Text>
             <Text style={styles.xpText}>{stats.totalXP} XP</Text>
