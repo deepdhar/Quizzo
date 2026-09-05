@@ -1,14 +1,14 @@
 import React, {useEffect, useRef} from 'react';
 import {StyleSheet, Text, Animated} from 'react-native';
 
-const TimerBadge = ({timeLeft}) => {
+const TimerBadge = ({timeLeft, totalTime = 20}) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (timeLeft <= 4 && timeLeft > 0) {
+    if (timeLeft <= 3 && timeLeft > 0) {
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.15,
+          toValue: 1.08,
           duration: 250,
           useNativeDriver: true,
         }),
@@ -21,19 +21,24 @@ const TimerBadge = ({timeLeft}) => {
     }
   }, [timeLeft, pulseAnim]);
 
-  // Determine color based on time left
-  let badgeBg = 'rgba(99, 193, 116, 0.15)';
-  let badgeBorder = '#63C174';
-  let textColor = '#63C174';
+  // Determine color thresholds:
+  // Hard (10s): <=3s red, <=6s amber, >6s green
+  // Medium (20s): <=5s red, <=10s amber, >10s green
+  const redThreshold = totalTime <= 10 ? 3 : 5;
+  const amberThreshold = totalTime <= 10 ? 6 : 10;
 
-  if (timeLeft <= 4) {
-    badgeBg = 'rgba(239, 68, 68, 0.15)';
-    badgeBorder = '#EF4444';
-    textColor = '#EF4444';
-  } else if (timeLeft <= 7) {
-    badgeBg = 'rgba(255, 200, 87, 0.15)';
-    badgeBorder = '#FFC857';
-    textColor = '#E6AC00';
+  let badgeBg = '#EDFDF2';
+  let badgeBorder = '#35C878';
+  let textColor = '#2E7D32';
+
+  if (timeLeft <= redThreshold) {
+    badgeBg = '#FFF1F3';
+    badgeBorder = '#FF4D6D';
+    textColor = '#E11D48';
+  } else if (timeLeft <= amberThreshold) {
+    badgeBg = '#FFF7ED';
+    badgeBorder = '#FF8A4C';
+    textColor = '#C25E00';
   }
 
   return (
@@ -58,17 +63,21 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1.5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1.2,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   icon: {
-    fontSize: 14,
+    fontSize: 12,
     marginRight: 4,
+    backgroundColor: 'transparent',
   },
   text: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '700',
+    backgroundColor: 'transparent',
   },
 });

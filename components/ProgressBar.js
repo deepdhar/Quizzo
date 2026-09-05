@@ -4,7 +4,7 @@ import {StyleSheet, View, Text, Animated} from 'react-native';
 const ProgressBar = ({
   current,
   total,
-  color = '#63C174', // Positive Green
+  color = '#35C878', // Quizzo Success Green
   trackColor = '#E2E8F0',
 }) => {
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -15,8 +15,8 @@ const ProgressBar = ({
     Animated.spring(animatedWidth, {
       toValue: progressPercent,
       useNativeDriver: false,
-      bounciness: 4,
-      speed: 12,
+      bounciness: 2,
+      speed: 10,
     }).start();
   }, [progressPercent, animatedWidth]);
 
@@ -42,7 +42,7 @@ const ProgressBar = ({
               width: widthInterpolation,
             },
           ]}>
-          {/* Gloss highlight line */}
+          {/* Subtle gloss highlight line */}
           <View style={styles.gloss} />
         </Animated.View>
       </View>
@@ -55,7 +55,7 @@ export default ProgressBar;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginVertical: 10,
+    marginVertical: 8,
   },
   labelRow: {
     flexDirection: 'row',
@@ -64,24 +64,24 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   labelText: {
-    color: '#7A8B99',
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
   },
   percentText: {
-    color: '#4F7DF3',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
   },
   track: {
-    height: 12,
-    borderRadius: 10,
+    height: 10,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    borderRadius: 10,
+    borderRadius: 8,
     position: 'relative',
   },
   gloss: {
@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
     top: 1,
     left: 2,
     right: 2,
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.4)',
+    height: 2.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
     borderRadius: 4,
   },
 });

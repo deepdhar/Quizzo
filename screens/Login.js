@@ -5,70 +5,37 @@ import {
   View,
   SafeAreaView,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Alert,
   ActivityIndicator,
   DeviceEventEmitter,
+  Image,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import Button3D from '../components/Button3D';
 import GoogleIcon from '../components/GoogleIcon';
 import {
   getUserProfile,
   updateUserProfile,
   setOnboarded,
-  AVATAR_OPTIONS,
 } from '../utils/leaderboardService';
 import {configureGoogleSignIn, signInWithGoogle} from '../utils/authService';
 
 const Login = () => {
   const navigation = useNavigation();
-  const [selectedMode, setSelectedMode] = useState('google'); // 'google' | 'username'
-  const [nickname, setNickname] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('🚀');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isUsernameLoading, setIsUsernameLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
 
   useEffect(() => {
     configureGoogleSignIn();
-    getUserProfile().then(prof => {
-      if (prof) {
-        if (prof.name && prof.name !== 'Player One') {
-          setNickname(prof.name);
-        }
-        if (prof.avatar) {
-          setSelectedAvatar(prof.avatar);
-        }
-      }
-    });
   }, []);
 
-  const handleStartWithUsername = async () => {
-    const finalName = nickname.trim() || 'Player One';
-    setIsUsernameLoading(true);
-    try {
-      await updateUserProfile(finalName, selectedAvatar);
-      await setOnboarded();
-      DeviceEventEmitter.emit('USER_PROFILE_UPDATED', selectedAvatar);
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'MainTabs'}],
-      });
-    } catch (e) {
-      await setOnboarded();
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'MainTabs'}],
-      });
-    } finally {
-      setIsUsernameLoading(false);
-    }
-  };
-
+  // 1-Tap Google Sign-In
   const handleGoogleSignInPress = async () => {
+    if (isGoogleLoading || isGuestLoading) {
+      return;
+    }
     setIsGoogleLoading(true);
     try {
       const result = await signInWithGoogle();
@@ -91,8 +58,46 @@ const Login = () => {
     }
   };
 
+  // Continue as Guest
+  const handleGuestPress = async () => {
+    if (isGoogleLoading || isGuestLoading) {
+      return;
+    }
+    setIsGuestLoading(true);
+    try {
+      let profile = await getUserProfile();
+      if (!profile || !profile.name) {
+        profile = await updateUserProfile('Player One', '🚀');
+      }
+      await setOnboarded();
+      DeviceEventEmitter.emit('USER_PROFILE_UPDATED', profile?.avatar || '🚀');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'MainTabs'}],
+      });
+    } catch (e) {
+      await setOnboarded();
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'MainTabs'}],
+      });
+    } finally {
+      setIsGuestLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Subtle Floating Background Accents */}
+      <View pointerEvents="none" style={styles.bgDecorations}>
+        <Text style={[styles.bgSymbol, styles.symbolTopLeft]}>✦</Text>
+        <Text style={[styles.bgSymbol, styles.symbolTopRight]}>★</Text>
+        <Text style={[styles.bgSymbol, styles.symbolMidLeft]}>?</Text>
+        <Text style={[styles.bgSymbol, styles.symbolMidRight]}>⚡</Text>
+        <Text style={[styles.bgSymbol, styles.symbolBottomLeft]}>✦</Text>
+        <Text style={[styles.bgSymbol, styles.symbolBottomRight]}>★</Text>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}>
@@ -100,128 +105,101 @@ const Login = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}>
-          {/* Top Logo / Mascot */}
-          <View style={styles.mascotSection}>
-            <View style={styles.mascotGlow}>
-              <Text style={styles.mascotEmoji}>🏆</Text>
+          {/* ── 3. QUIZZO BRANDING & MASCOT ── */}
+          <View style={styles.brandingSection}>
+            <View style={styles.mascotWrapper}>
+              <Image
+                source={require('../assets/login_trophy_mascot.jpg')}
+                style={styles.mascotImage}
+                resizeMode="contain"
+              />
             </View>
-            <Text style={styles.appTitle}>Quizzo ✨</Text>
-            <Text style={styles.appTagline}>
-              Train Your Brain &amp; Climb the Global Leaderboard!
+
+            <Text style={styles.appTitle}>Quizzo✨</Text>
+
+            {/* ── 4. SHORT ENGAGING TAGLINE ── */}
+            <Text style={styles.taglineMain}>Ready to test your brain?</Text>
+            <Text style={styles.taglineSub}>Play. Learn. Level up.</Text>
+          </View>
+
+          {/* ── 5. MAIN AUTHENTICATION CARD ── */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Welcome to Quizzo!</Text>
+            <Text style={styles.cardSubtitle}>
+              Save your progress, earn XP and climb the leaderboard.
+            </Text>
+
+            {/* ── 6. PRIMARY GOOGLE AUTHENTICATION CTA ── */}
+            <TouchableOpacity
+              style={[
+                styles.googleButton,
+                isGoogleLoading && styles.buttonDisabled,
+              ]}
+              activeOpacity={0.85}
+              onPress={handleGoogleSignInPress}
+              disabled={isGoogleLoading || isGuestLoading}>
+              {isGoogleLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <View style={styles.googleBtnInner}>
+                  <View style={styles.googleIconCircle}>
+                    <GoogleIcon size={22} style={styles.googleIconNoMargin} />
+                  </View>
+                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                  <View style={styles.googleChevronContainer}>
+                    <View style={styles.googleChevron} />
+                  </View>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* ── 7 & 8. GUEST MODE ── */}
+            <TouchableOpacity
+              style={[
+                styles.guestButton,
+                isGuestLoading && styles.buttonDisabled,
+              ]}
+              activeOpacity={0.8}
+              onPress={handleGuestPress}
+              disabled={isGoogleLoading || isGuestLoading}>
+              {isGuestLoading ? (
+                <ActivityIndicator color="#3B82F6" size="small" />
+              ) : (
+                <View style={styles.guestBtnInner}>
+                  <View style={styles.guestIconCircle}>
+                    <Text style={styles.guestIcon}>🎮</Text>
+                  </View>
+                  <Text style={styles.guestBtnText}>Continue as Guest</Text>
+                  <View style={styles.guestChevronContainer}>
+                    <View style={styles.guestChevron} />
+                  </View>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <Text style={styles.guestSubtext}>
+              You can create an account later to save your progress.
             </Text>
           </View>
 
-          {/* Mode Switcher Tabs */}
-          <View style={styles.modeTabs}>
-            <TouchableOpacity
-              style={[
-                styles.modeTab,
-                selectedMode === 'google' && styles.modeTabActive,
-              ]}
-              onPress={() => setSelectedMode('google')}>
-              <Text
-                style={[
-                  styles.modeTabText,
-                  selectedMode === 'google' && styles.modeTabTextActive,
-                ]}>
-                🌐 Google Account
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.modeTab,
-                selectedMode === 'username' && styles.modeTabActive,
-              ]}
-              onPress={() => setSelectedMode('username')}>
-              <Text
-                style={[
-                  styles.modeTabText,
-                  selectedMode === 'username' && styles.modeTabTextActive,
-                ]}>
-                🎮 Play as Guest
-              </Text>
-            </TouchableOpacity>
+          {/* ── 9. TRUST & PRIVACY FOOTER ── */}
+          <View style={styles.footerSection}>
+            <Text style={styles.trustText}>
+              🔒 Your progress and XP are synced securely.
+            </Text>
+            <View style={styles.legalRow}>
+              <Text style={styles.legalLink}>Privacy Policy</Text>
+              <Text style={styles.legalDot}>·</Text>
+              <Text style={styles.legalLink}>Terms of Service</Text>
+            </View>
           </View>
-
-          {/* Card Content based on Mode */}
-          {selectedMode === 'google' ? (
-            <View style={styles.cardContainer}>
-              <View style={styles.googleHeroBox}>
-                <View style={styles.googleIconCircle}>
-                  <GoogleIcon size={32} style={styles.heroGoogleLogo} />
-                </View>
-                <Text style={styles.googleCardTitle}>Sign in with Google</Text>
-                <Text style={styles.googleCardSubtitle}>
-                  One-tap sign in using your official Google Account to sync XP,
-                  stats, and real-time ranks.
-                </Text>
-              </View>
-
-              {/* Official styled Google Sign In Button */}
-              <TouchableOpacity
-                style={[
-                  styles.googleOfficialButton,
-                  isGoogleLoading && styles.buttonDisabled,
-                ]}
-                activeOpacity={0.85}
-                onPress={handleGoogleSignInPress}
-                disabled={isGoogleLoading}>
-                {isGoogleLoading ? (
-                  <ActivityIndicator color="#1F2937" size="small" />
-                ) : (
-                  <View style={styles.googleButtonInner}>
-                    <GoogleIcon size={24} />
-                    <Text style={styles.googleButtonText}>
-                      Sign in with Google
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.cardContainer}>
-              <Text style={styles.sectionHeading}>1. Choose Your Avatar</Text>
-              <View style={styles.avatarPickerRow}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={styles.avatarList}>
-                  {AVATAR_OPTIONS.map((av, i) => (
-                    <TouchableOpacity
-                      key={i}
-                      style={[
-                        styles.avatarItem,
-                        selectedAvatar === av && styles.avatarItemSelected,
-                      ]}
-                      onPress={() => setSelectedAvatar(av)}>
-                      <Text style={styles.avatarEmoji}>{av}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <Text style={styles.sectionHeading}>2. Enter Your Nickname</Text>
-              <TextInput
-                style={styles.textInput}
-                value={nickname}
-                onChangeText={setNickname}
-                placeholder="e.g. BrainiacMax, StarGazer"
-                placeholderTextColor="#64748B"
-                maxLength={15}
-                autoCorrect={false}
-              />
-
-              <Button3D
-                title={isUsernameLoading ? 'STARTING...' : 'PLAY 🚀'}
-                onPress={handleStartWithUsername}
-                size="large"
-                disabled={isUsernameLoading}
-                style={styles.actionBtn}
-              />
-            </View>
-          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -231,196 +209,300 @@ const Login = () => {
 export default Login;
 
 const styles = StyleSheet.create({
+  // ── 2. QUIZZO SIGNATURE BLUE BACKGROUND ──
   container: {
     flex: 1,
-    backgroundColor: '#4F7DF3',
+    backgroundColor: '#407CF4',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 40,
-    alignItems: 'center',
-  },
-  mascotSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  mascotGlow: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    // backgroundColor: 'rgba(255, 200, 87, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  mascotEmoji: {
-    fontSize: 50,
-  },
-  appTitle: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  appTagline: {
-    color: '#E2E8F0',
-    fontSize: 14,
-    textAlign: 'center',
-    maxWidth: 280,
-    lineHeight: 20,
-  },
-  modeTabs: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    padding: 4,
-    width: '100%',
-    marginBottom: 20,
-  },
-  modeTab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  modeTabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  modeTabText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  modeTabTextActive: {
-    color: '#4F7DF3',
-  },
-  cardContainer: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  googleHeroBox: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginBottom: 12,
-  },
-  googleIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  heroGoogleLogo: {
-    marginRight: 0,
-  },
-  googleCardTitle: {
-    color: '#25324A',
-    fontSize: 19,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  googleCardSubtitle: {
-    color: '#7A8B99',
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-  },
-  googleOfficialButton: {
-    flexDirection: 'row',
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F7F9FC',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginTop: 8,
+    minHeight: '100%',
   },
-  buttonDisabled: {
-    opacity: 0.7,
+
+  // Low-contrast background floating shapes
+  bgDecorations: {
+    ...StyleSheet.absoluteFillObject,
   },
-  googleButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleButtonText: {
-    color: '#25324A',
-    fontSize: 16,
+  bgSymbol: {
+    position: 'absolute',
+    color: 'rgba(255, 255, 255, 0.12)',
     fontWeight: 'bold',
   },
-  sectionHeading: {
-    color: '#25324A',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  symbolTopLeft: {
+    top: 40,
+    left: 28,
+    fontSize: 22,
   },
-  avatarPickerRow: {
-    marginBottom: 16,
-  },
-  avatarList: {
-    paddingVertical: 4,
-  },
-  avatarItem: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F7F9FC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  avatarItemSelected: {
-    borderColor: '#4F7DF3',
-    backgroundColor: 'rgba(79, 125, 243, 0.1)',
-  },
-  avatarEmoji: {
+  symbolTopRight: {
+    top: 48,
+    right: 32,
     fontSize: 24,
   },
-  textInput: {
-    backgroundColor: '#F7F9FC',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: '#25324A',
-    fontSize: 15,
+  symbolMidLeft: {
+    top: '38%',
+    left: 20,
+    fontSize: 28,
+  },
+  symbolMidRight: {
+    top: '36%',
+    right: 22,
+    fontSize: 24,
+  },
+  symbolBottomLeft: {
+    bottom: 70,
+    left: 36,
+    fontSize: 22,
+  },
+  symbolBottomRight: {
+    bottom: 64,
+    right: 32,
+    fontSize: 26,
+  },
+
+  // ── 3. BRANDING & MASCOT ──
+  brandingSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  mascotWrapper: {
+    width: 220,
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  mascotImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 51,
+  },
+  appTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
+    marginBottom: 6,
+  },
+  taglineMain: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  taglineSub: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
+
+  // ── 5. MAIN AUTH CARD ──
+  card: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 26,
+    paddingVertical: 24,
+    paddingHorizontal: 22,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 6},
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
+    marginBottom: 20,
   },
-  actionBtn: {
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#253858',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+
+  // ── 6. GOOGLE CTA ──
+  googleButton: {
     width: '100%',
+    height: 56,
+    backgroundColor: '#3B82F6',
+    borderRadius: 18,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    shadowColor: '#3B82F6',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  googleBtnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  googleIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  googleIconNoMargin: {
+    marginRight: 0,
+  },
+  googleBtnText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  googleChevronContainer: {
+    width: 38,
+    height: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleChevron: {
+    width: 9,
+    height: 9,
+    borderTopWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#FFFFFF',
+    transform: [{rotate: '45deg'}],
+    borderRadius: 1.5,
+  },
+
+  // Divider
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+
+  // ── 7. GUEST CTA ──
+  guestButton: {
+    width: '100%',
+    height: 56,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#3B82F6',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  guestBtnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  guestIconCircle: {
+    width: 38,
+    height: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guestIcon: {
+    fontSize: 22,
+  },
+  guestBtnText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0A2540',
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  guestChevronContainer: {
+    width: 38,
+    height: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  guestChevron: {
+    width: 9,
+    height: 9,
+    borderTopWidth: 2.5,
+    borderRightWidth: 2.5,
+    borderColor: '#0A2540',
+    transform: [{rotate: '45deg'}],
+    borderRadius: 1.5,
+  },
+  guestSubtext: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 16,
+    paddingHorizontal: 8,
+  },
+
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+
+  // ── 9. FOOTER ──
+  footerSection: {
+    alignItems: 'center',
+  },
+  trustText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.88)',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legalLink: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.72)',
+  },
+  legalDot: {
+    marginHorizontal: 6,
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
 });
