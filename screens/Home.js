@@ -186,7 +186,7 @@ const Home = () => {
           {item.heading}
         </Text>
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
           style={[styles.bannerSub, {color: item.textColor}]}>
           {item.sub}
         </Text>
@@ -254,7 +254,7 @@ const Home = () => {
         <View style={styles.header}>
           <Text style={styles.appName}>Quizzo</Text>
           <View style={styles.hudRow}>
-            <View style={[styles.hudPill, styles.streakPill]}>
+            <View style={[styles.hudPill, styles.streakPill, {marginRight:10}]}>
               <Text style={styles.hudPillIcon}>🔥</Text>
               <Text style={styles.hudPillText}>
                 {stats.streak} day{stats.streak !== 1 ? 's' : ''} streak
@@ -534,13 +534,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   bannerHeading: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     lineHeight: 22,
     marginVertical: 2,
   },
   bannerSub: {
-    fontSize: 11,
+    fontSize: 16,
     fontWeight: '600',
     opacity: 0.9,
     marginBottom: 4,

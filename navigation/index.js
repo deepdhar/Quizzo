@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import {View, ActivityIndicator, StyleSheet} from 'react-native';
 import {
   CardStyleInterpolators,
   createStackNavigator,
@@ -13,17 +12,58 @@ import SelectQuiz from '../screens/SelectQuiz';
 import Leaderboard from '../screens/Leaderboard';
 import Login from '../screens/Login';
 import Profile from '../screens/Profile';
-import {checkHasOnboarded} from '../utils/leaderboardService';
-import {Text} from 'react-native';
+import {
+  Text,
+  View,
+  ActivityIndicator,
+  StyleSheet,
+  DeviceEventEmitter,
+} from 'react-native';
 import AnimatedTabBar from '../components/AnimatedTabBar';
+import {checkHasOnboarded, getUserProfile} from '../utils/leaderboardService';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const DEFAULT_PROFILE_ICON = '😎';
+
+const ProfileTabIcon = ({size}) => {
+  const [avatar, setAvatar] = useState(DEFAULT_PROFILE_ICON);
+
+  useEffect(() => {
+    let isMounted = true;
+    getUserProfile().then(profile => {
+      if (isMounted && profile?.avatar) {
+        setAvatar(profile.avatar);
+      }
+    });
+
+    const sub = DeviceEventEmitter.addListener(
+      'USER_PROFILE_UPDATED',
+      newAvatar => {
+        if (isMounted) {
+          setAvatar(newAvatar || DEFAULT_PROFILE_ICON);
+        }
+      },
+    );
+
+    return () => {
+      isMounted = false;
+      sub.remove();
+    };
+  }, []);
+
+  return (
+    <Text style={{fontSize: size, opacity: 1, color: '#000'}}>
+      {avatar || DEFAULT_PROFILE_ICON}
+    </Text>
+  );
+};
+
 const MainTabs = () => {
   return (
     <Tab.Navigator
-      tabBar={(props) => <AnimatedTabBar {...props} />}
+      tabBar={props => <AnimatedTabBar {...props} />}
       screenOptions={{
         headerShown: false,
       }}>
@@ -62,9 +102,7 @@ const MainTabs = () => {
         component={Profile}
         options={{
           tabBarLabel: 'Profile',
-          tabBarIcon: ({focused, size}) => (
-            <Text style={{fontSize: size, opacity: 1, color: '#000'}}>😎</Text>
-          ),
+          tabBarIcon: ({focused, size}) => <ProfileTabIcon size={size} />,
         }}
       />
     </Tab.Navigator>
