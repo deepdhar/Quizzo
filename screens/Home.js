@@ -137,13 +137,44 @@ const Home = () => {
     });
   };
 
-  // Build array of active streak days
-  const today = new Date().getDay(); // 0 = Sunday
-  // Rearrange to Mon-Sun
+  // Build array of active streak days (Mon-Sun)
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const playedToday = stats.lastPlayedDate === todayDateStr;
+  const currentDayOfWeek = (new Date().getDay() + 6) % 7; // 0=Mon, 1=Tue, ..., 5=Sat, 6=Sun
+
   const streakDays = WEEK_DAYS.map((day, i) => {
-    const dayIndex = (i + 1) % 7; // Mon=1...Sun=0
-    const isActive = stats.streak >= 7 || dayIndex <= today;
-    return {day, isActive};
+    // If streak is 0, no day is completed
+    if (!stats.streak || stats.streak === 0) {
+      return {
+        day,
+        isCompleted: false,
+        isToday: i === currentDayOfWeek,
+      };
+    }
+
+    // If streak is >= 7, all 7 days of the week are completed
+    if (stats.streak >= 7) {
+      return {
+        day,
+        isCompleted: true,
+        isToday: i === currentDayOfWeek,
+      };
+    }
+
+    // If played today, streak covers today and (streak - 1) preceding days
+    // If not played today yet, streak covers (streak) days ending yesterday
+    const lastActiveDayIndex = playedToday
+      ? currentDayOfWeek
+      : currentDayOfWeek - 1;
+    const firstActiveDayIndex = lastActiveDayIndex - stats.streak + 1;
+
+    const isCompleted = i >= firstActiveDayIndex && i <= lastActiveDayIndex;
+
+    return {
+      day,
+      isCompleted,
+      isToday: i === currentDayOfWeek,
+    };
   });
 
   const handleBannerPress = item => {
@@ -382,15 +413,22 @@ const Home = () => {
                 <View
                   style={[
                     styles.streakDot,
-                    d.isActive && i < (stats.streak % 7 || 7)
+                    d.isCompleted
                       ? styles.streakDotActive
                       : styles.streakDotInactive,
+                    d.isToday && !d.isCompleted && styles.streakDotToday,
                   ]}>
-                  {d.isActive && i < (stats.streak % 7 || 7) ? (
+                  {d.isCompleted ? (
                     <Text style={styles.streakCheck}>✓</Text>
                   ) : null}
                 </View>
-                <Text style={styles.streakDayLabel}>{d.day}</Text>
+                <Text
+                  style={[
+                    styles.streakDayLabel,
+                    d.isToday && styles.streakDayLabelToday,
+                  ]}>
+                  {d.day}
+                </Text>
               </View>
             ))}
           </View>
@@ -776,6 +814,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
+  streakDotToday: {
+    borderColor: '#FF8A4C',
+    borderWidth: 1.5,
+    backgroundColor: 'rgba(255, 138, 76, 0.08)',
+  },
   streakCheck: {
     color: '#FFFFFF',
     fontSize: 14,
@@ -785,6 +828,10 @@ const styles = StyleSheet.create({
     color: '#7A8B99',
     fontSize: 11,
     fontWeight: '600',
+  },
+  streakDayLabelToday: {
+    color: '#FF8A4C',
+    fontWeight: 'bold',
   },
 
   // ── ACHIEVEMENTS ──

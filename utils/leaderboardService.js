@@ -28,6 +28,17 @@ export const setOnboarded = async () => {
   }
 };
 
+/**
+ * Clear user onboarded status (on logout)
+ */
+export const clearOnboarded = async () => {
+  try {
+    await AsyncStorage.removeItem(ONBOARDED_KEY);
+  } catch (e) {
+    // Ignored
+  }
+};
+
 export const AVATAR_OPTIONS = [
   '🦁',
   '🚀',
@@ -40,7 +51,6 @@ export const AVATAR_OPTIONS = [
   '🦉',
   '🐯',
 ];
-
 
 /**
  * Gets or initializes the user profile.
@@ -65,6 +75,23 @@ export const getUserProfile = async () => {
 };
 
 /**
+ * Resets user profile to default (e.g. on logout)
+ */
+export const resetUserProfile = async () => {
+  try {
+    const defaultProfile = {
+      id: 'player_' + Math.random().toString(36).substring(2, 9),
+      name: 'Player One',
+      avatar: '🚀',
+    };
+    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(defaultProfile));
+    return defaultProfile;
+  } catch (e) {
+    return {id: 'local_player', name: 'Player One', avatar: '🚀'};
+  }
+};
+
+/**
  * Updates the user's name and avatar locally and syncs to Supabase.
  */
 export const updateUserProfile = async (name, avatar) => {
@@ -77,8 +104,8 @@ export const updateUserProfile = async (name, avatar) => {
     };
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(updated));
 
-    // Sync updated profile to cloud
-    await syncPlayerToLeaderboard();
+    // Sync updated profile to cloud in the background
+    syncPlayerToLeaderboard().catch(() => {});
 
     return updated;
   } catch (e) {
@@ -139,14 +166,13 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
 
     if (hasSupabase) {
       try {
-        // Sync local stats to cloud on fetch
-        await syncPlayerToLeaderboard();
-
-        // Query live leaderboard
+        // Query live leaderboard with deterministic order
         let query = supabase
           .from('leaderboard')
           .select('*')
           .order('xp', {ascending: false})
+          .order('streak', {ascending: false})
+          .order('name', {ascending: true})
           .limit(50);
 
         if (timeframe === 'weekly') {
@@ -159,7 +185,7 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
         const {data, error} = await query;
         if (!error && Array.isArray(data) && data.length > 0) {
           cloudPlayers = data.map(item => ({
-            id: item.id || Math.random().toString(),
+            id: item.id || item.name || Math.random().toString(),
             name: item.name || 'Anonymous',
             avatar: item.avatar || '🚀',
             xp: item.xp || 0,
@@ -167,6 +193,17 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
             streak: item.streak || 0,
             isCurrentUser: item.id === profile.id,
           }));
+
+          // Deterministic tie-breaking sort so list NEVER jumbles
+          cloudPlayers.sort((a, b) => {
+            if (b.xp !== a.xp) {
+              return b.xp - a.xp;
+            }
+            if (b.streak !== a.streak) {
+              return b.streak - a.streak;
+            }
+            return (a.name || '').localeCompare(b.name || '');
+          });
         }
       } catch (err) {
         // Fall back to local data if cloud request failed
@@ -197,7 +234,7 @@ export const fetchGlobalLeaderboard = async (timeframe = 'all-time') => {
 };
 
 /**
- * Subscribes to real-time Postgres changes on the leaderboard table.
+ * Subscribes to real-time Postgres changes on the leaderboard table with debouncing.
  */
 export const subscribeToLeaderboardChanges = onChangeCallback => {
   if (!isSupabaseConfigured()) {
@@ -205,6 +242,7 @@ export const subscribeToLeaderboardChanges = onChangeCallback => {
   }
 
   try {
+    let debounceTimer = null;
     const channel = supabase
       .channel('public:leaderboard')
       .on(
@@ -216,13 +254,21 @@ export const subscribeToLeaderboardChanges = onChangeCallback => {
         },
         () => {
           if (typeof onChangeCallback === 'function') {
-            onChangeCallback();
+            if (debounceTimer) {
+              clearTimeout(debounceTimer);
+            }
+            debounceTimer = setTimeout(() => {
+              onChangeCallback();
+            }, 1200);
           }
         },
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
       try {
         supabase.removeChannel(channel);
       } catch (e) {

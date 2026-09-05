@@ -7,13 +7,16 @@ import {
   getUserProfile,
   updateUserProfile,
   setOnboarded,
+  clearOnboarded,
+  resetUserProfile,
   syncPlayerToLeaderboard,
 } from './leaderboardService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Optional: Web Client ID from Google Cloud Console / Firebase / Supabase Auth Provider
 // If you have a Web Client ID, paste it here:
-export const GOOGLE_WEB_CLIENT_ID = '31043432322-v71urlfqriohs5pgecfciddvdslreeii.apps.googleusercontent.com';
+export const GOOGLE_WEB_CLIENT_ID =
+  '31043432322-v71urlfqriohs5pgecfciddvdslreeii.apps.googleusercontent.com';
 
 const AUTH_USER_KEY = 'QUIZZO_AUTH_USER';
 
@@ -121,13 +124,25 @@ export const signInWithGoogle = async () => {
 export const signOutUser = async () => {
   try {
     configureGoogleSignIn();
-    await GoogleSignin.signOut();
+    try {
+      await GoogleSignin.signOut();
+    } catch (gErr) {
+      // Ignored if not signed in with Google
+    }
     if (isSupabaseConfigured()) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (sErr) {
+        // Ignored
+      }
     }
     await AsyncStorage.removeItem(AUTH_USER_KEY);
+    await clearOnboarded();
+    await resetUserProfile();
     return true;
   } catch (e) {
+    await clearOnboarded();
+    await resetUserProfile();
     return false;
   }
 };

@@ -18,6 +18,7 @@ import {
   AVATAR_OPTIONS,
 } from '../utils/leaderboardService';
 import {signOutUser} from '../utils/authService';
+import {resetRoot} from '../navigation';
 
 const LogoutIcon = ({color = '#FFFFFF', size = 18}) => (
   <View
@@ -106,10 +107,15 @@ const Profile = () => {
         onPress: async () => {
           await signOutUser();
           DeviceEventEmitter.emit('USER_PROFILE_UPDATED', null);
-          navigation.reset({
-            index: 0,
-            routes: [{name: 'Login'}],
-          });
+          const parentNav = navigation.getParent();
+          if (parentNav) {
+            parentNav.reset({
+              index: 0,
+              routes: [{name: 'Login'}],
+            });
+          } else {
+            resetRoot('Login');
+          }
         },
       },
     ]);

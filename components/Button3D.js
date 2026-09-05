@@ -1,11 +1,5 @@
 import React, {useRef} from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  Animated,
-  View,
-} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, Animated, View} from 'react-native';
 
 const Button3D = ({
   title,
@@ -54,7 +48,8 @@ const Button3D = ({
   const isLarge = size === 'large';
 
   return (
-    <TouchableWithoutFeedback
+    <TouchableOpacity
+      activeOpacity={0.9}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
@@ -100,7 +95,7 @@ const Button3D = ({
           </View>
         </Animated.View>
       </View>
-    </TouchableWithoutFeedback>
+    </TouchableOpacity>
   );
 };
 

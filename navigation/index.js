@@ -25,6 +25,17 @@ import {checkHasOnboarded, getUserProfile} from '../utils/leaderboardService';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+export const navigationRef = React.createRef();
+
+export const resetRoot = routeName => {
+  if (navigationRef.current) {
+    navigationRef.current.reset({
+      index: 0,
+      routes: [{name: routeName}],
+    });
+  }
+};
+
 const DEFAULT_PROFILE_ICON = '😎';
 
 const ProfileTabIcon = ({size}) => {
@@ -127,7 +138,7 @@ const MyStack = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName={isOnboarded ? 'MainTabs' : 'Login'}
         screenOptions={{

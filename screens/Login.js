@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  DeviceEventEmitter,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
@@ -51,9 +52,17 @@ const Login = () => {
     try {
       await updateUserProfile(finalName, selectedAvatar);
       await setOnboarded();
-      navigation.replace('Home');
+      DeviceEventEmitter.emit('USER_PROFILE_UPDATED', selectedAvatar);
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'MainTabs'}],
+      });
     } catch (e) {
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
+      await setOnboarded();
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'MainTabs'}],
+      });
     } finally {
       setIsUsernameLoading(false);
     }
@@ -64,7 +73,14 @@ const Login = () => {
     try {
       const result = await signInWithGoogle();
       if (result.success) {
-        navigation.replace('Home');
+        DeviceEventEmitter.emit(
+          'USER_PROFILE_UPDATED',
+          result.user?.avatar || '👑',
+        );
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'MainTabs'}],
+        });
       } else if (!result.cancelled) {
         Alert.alert('Google Sign-In', result.error || 'Sign in failed');
       }
@@ -75,11 +91,6 @@ const Login = () => {
     }
   };
 
-  const handleGuestPlay = async () => {
-    await setOnboarded();
-    navigation.replace('Home');
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -87,6 +98,7 @@ const Login = () => {
         style={styles.keyboardView}>
         <ScrollView
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}>
           {/* Top Logo / Mascot */}
           <View style={styles.mascotSection}>
@@ -127,7 +139,7 @@ const Login = () => {
                   styles.modeTabText,
                   selectedMode === 'username' && styles.modeTabTextActive,
                 ]}>
-                🎮 Pick Nickname
+                🎮 Play as Guest
               </Text>
             </TouchableOpacity>
           </View>
@@ -174,6 +186,7 @@ const Login = () => {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
                   contentContainerStyle={styles.avatarList}>
                   {AVATAR_OPTIONS.map((av, i) => (
                     <TouchableOpacity
@@ -201,7 +214,7 @@ const Login = () => {
               />
 
               <Button3D
-                title={isUsernameLoading ? 'SETTING UP...' : 'LET’S PLAY! 🚀'}
+                title={isUsernameLoading ? 'STARTING...' : 'PLAY 🚀'}
                 onPress={handleStartWithUsername}
                 size="large"
                 disabled={isUsernameLoading}
@@ -209,13 +222,6 @@ const Login = () => {
               />
             </View>
           )}
-
-          {/* Quick Play as Guest */}
-          <TouchableOpacity style={styles.guestLink} onPress={handleGuestPlay}>
-            <Text style={styles.guestLinkText}>
-              Skip &amp; Play as Guest ⚡
-            </Text>
-          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -246,11 +252,9 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(255, 200, 87, 0.2)',
+    // backgroundColor: 'rgba(255, 200, 87, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 200, 87, 0.5)',
     marginBottom: 12,
   },
   mascotEmoji: {
@@ -418,13 +422,5 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     width: '100%',
-  },
-  guestLink: {
-    paddingVertical: 12,
-  },
-  guestLinkText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
 });

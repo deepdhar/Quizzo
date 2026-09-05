@@ -18,6 +18,7 @@ import Button3D from '../components/Button3D';
 import {
   fetchGlobalLeaderboard,
   subscribeToLeaderboardChanges,
+  syncPlayerToLeaderboard,
 } from '../utils/leaderboardService';
 
 const Leaderboard = () => {
@@ -30,6 +31,11 @@ const Leaderboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    // Sync local player stats once when entering leaderboard screen
+    syncPlayerToLeaderboard().catch(() => {});
+  }, []);
 
   const loadLeaderboard = useCallback(async () => {
     try {
@@ -50,6 +56,7 @@ const Leaderboard = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    await syncPlayerToLeaderboard().catch(() => {});
     await loadLeaderboard();
     setRefreshing(false);
   };
@@ -544,15 +551,20 @@ const styles = StyleSheet.create({
   },
   currentUserRowHighlight: {
     borderColor: '#4F7DF3',
-    backgroundColor: 'rgba(79, 125, 243, 0.08)',
+    borderWidth: 1.5,
+    backgroundColor: '#EDF4FF',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   rankContainer: {
     width: 32,
+    backgroundColor: 'transparent',
   },
   rankNumber: {
     color: '#7A8B99',
     fontSize: 14,
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   avatarCircle: {
     width: 38,
@@ -567,13 +579,16 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 20,
+    backgroundColor: 'transparent',
   },
   playerInfo: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   playerName: {
     color: '#25324A',
@@ -581,31 +596,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginRight: 6,
     maxWidth: 140,
+    backgroundColor: 'transparent',
   },
   currentUserText: {
     color: '#4F7DF3',
+    backgroundColor: 'transparent',
   },
   streakBadge: {
     color: '#FF8A4C',
     fontSize: 11,
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   levelTag: {
     color: '#7A8B99',
     fontSize: 11,
     marginTop: 2,
+    backgroundColor: 'transparent',
   },
   xpContainer: {
     alignItems: 'flex-end',
+    backgroundColor: 'transparent',
   },
   xpText: {
     color: '#FFC857',
     fontSize: 13,
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   xpLabel: {
     color: '#7A8B99',
     fontSize: 10,
+    backgroundColor: 'transparent',
   },
   stickyUserBar: {
     position: 'absolute',

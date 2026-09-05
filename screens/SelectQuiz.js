@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,118 +7,216 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Image,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {getPlayerStats} from '../utils/gameStorage';
 
 const {width} = Dimensions.get('window');
-const CARD_WIDTH = (width - 52) / 2;
+const CARD_WIDTH = (width - 48) / 2;
 
 const CATEGORIES = [
   {
     id: '18',
     name: 'Computers',
-    icon: '💻',
-    color: '#4F46E5',
-    shadow: '#3730A3',
-    description: 'Tech & Code',
+    image: require('../assets/categories/cat_computers.jpg'),
+    fallbackIcon: '💻',
+    color: '#407CF4', // Primary Blue
+    description: 'Tech & Coding',
+    badge: 'Popular 🔥',
   },
   {
     id: '22',
     name: 'Geography',
-    icon: '🌍',
-    color: '#059669',
-    shadow: '#047857',
+    image: require('../assets/categories/cat_geography.jpg'),
+    fallbackIcon: '🌍',
+    color: '#28A9B8', // Teal
     description: 'Maps & Earth',
+    badge: null,
   },
   {
     id: '21',
     name: 'Sports',
-    icon: '⚽',
-    color: '#EA580C',
-    shadow: '#C2410C',
+    image: require('../assets/categories/cat_sports.jpg'),
+    fallbackIcon: '⚽',
+    color: '#FF8A4C', // Energy Orange
     description: 'Games & Stars',
+    badge: null,
   },
   {
     id: '23',
     name: 'History',
-    icon: '🏛️',
-    color: '#9333EA',
-    shadow: '#7E22CE',
+    image: require('../assets/categories/cat_history.jpg'),
+    fallbackIcon: '🏛️',
+    color: '#8B65E8', // Purple
     description: 'Past Legends',
+    badge: null,
   },
   {
     id: '27',
     name: 'Animals',
-    icon: '🦁',
-    color: '#0891B2',
-    shadow: '#0E7490',
+    image: require('../assets/categories/cat_animals.jpg'),
+    fallbackIcon: '🦁',
+    color: '#FFC83D', // Warm Gold/Yellow
     description: 'Wild & Pets',
+    badge: 'Fun 🐾',
   },
   {
     id: '17',
     name: 'Science',
-    icon: '🔬',
-    color: '#2563EB',
-    shadow: '#1D4ED8',
+    image: require('../assets/categories/cat_science.jpg'),
+    fallbackIcon: '🔬',
+    color: '#35C878', // Success Green
     description: 'Space & Lab',
+    badge: 'New ✨',
   },
   {
     id: '11',
     name: 'Movies',
-    icon: '🎬',
-    color: '#DC2626',
-    shadow: '#B91C1C',
+    image: require('../assets/categories/cat_movies.jpg'),
+    fallbackIcon: '🎬',
+    color: '#FF5B79', // Coral Pink
     description: 'Cinema & Pop',
+    badge: null,
   },
   {
-    id: '20',
-    name: 'Mythology',
-    icon: '⚡',
-    color: '#D97706',
-    shadow: '#B45309',
-    description: 'Gods & Lore',
+    id: 'quick',
+    name: 'Quick Play',
+    image: require('../assets/categories/cat_quickplay.jpg'),
+    fallbackIcon: '⚡',
+    color: '#6366F1', // Indigo
+    description: 'Instant 10 Qs',
+    badge: 'Fast ⚡',
   },
 ];
 
 const DIFFICULTIES = [
-  {key: 'easy', label: 'Easy', icon: '🌱', activeColor: '#10B981'},
-  {key: 'medium', label: 'Medium', icon: '⚡', activeColor: '#F59E0B'},
-  {key: 'hard', label: 'Hard', icon: '🔥', activeColor: '#EF4444'},
+  {key: 'easy', label: 'Easy', icon: '🌱', activeColor: '#35C878'},
+  {key: 'medium', label: 'Medium', icon: '⚡', activeColor: '#407CF4'},
+  {key: 'hard', label: 'Hard', icon: '🔥', activeColor: '#FF5B79'},
 ];
 
 const SelectQuiz = () => {
   const navigation = useNavigation();
   const [difficulty, setDifficulty] = useState('medium');
+  const [stats, setStats] = useState({
+    categoriesPlayed: [],
+    bestScore: 0,
+    gamesPlayed: 0,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      getPlayerStats().then(loadedStats => {
+        if (isMounted && loadedStats) {
+          setStats(loadedStats);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }, []),
+  );
 
   const handleCategoryPress = category => {
-    const url = `https://opentdb.com/api.php?amount=10&category=${category.id}&difficulty=${difficulty}&type=multiple&encode=url3986`;
+    let url;
+    if (category.id === 'quick') {
+      // Pull randomly across all categories
+      url = `https://opentdb.com/api.php?amount=10&difficulty=${difficulty}&type=multiple&encode=url3986`;
+    } else {
+      url = `https://opentdb.com/api.php?amount=10&category=${category.id}&difficulty=${difficulty}&type=multiple&encode=url3986`;
+    }
+
     navigation.navigate('Quiz', {
       url,
       categoryName: category.name,
-      categoryIcon: category.icon,
+      categoryIcon: category.fallbackIcon,
       difficulty,
     });
   };
 
+  const getProgressBadge = item => {
+    const isPlayed =
+      Array.isArray(stats.categoriesPlayed) &&
+      stats.categoriesPlayed.includes(item.name);
+
+    if (isPlayed) {
+      if (stats.bestScore >= 8) {
+        return {text: 'Mastered 🌟', isPlayed: true};
+      }
+      return {text: `Best: ${stats.bestScore || 7}/10`, isPlayed: true};
+    }
+
+    if (item.badge) {
+      return {text: item.badge, isPlayed: false};
+    }
+
+    return null;
+  };
+
   const renderCategoryCard = ({item}) => {
+    const badgeInfo = getProgressBadge(item);
+
     return (
       <TouchableOpacity
         style={[
           styles.categoryCard,
           {
-            backgroundColor: item.color,
-            borderBottomColor: item.shadow,
+            borderColor: item.color + '30',
           },
         ]}
-        activeOpacity={0.85}
+        activeOpacity={0.88}
         onPress={() => handleCategoryPress(item)}>
-        <View style={styles.iconCircle}>
-          <Text style={styles.categoryIcon}>{item.icon}</Text>
+        {/* Subtle Top Progress / Status Badge */}
+        <View style={styles.cardHeaderRow}>
+          {badgeInfo ? (
+            <View
+              style={[
+                styles.statusBadge,
+                badgeInfo.isPlayed
+                  ? styles.statusBadgePlayed
+                  : {backgroundColor: item.color + '18'},
+              ]}>
+              <Text
+                style={[
+                  styles.statusBadgeText,
+                  badgeInfo.isPlayed
+                    ? styles.statusBadgeTextPlayed
+                    : {color: item.color},
+                ]}>
+                {badgeInfo.text}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.statusBadgePlaceholder} />
+          )}
         </View>
-        <Text style={styles.categoryTitle}>{item.name}</Text>
-        <Text style={styles.categoryDesc}>{item.description}</Text>
-        <View style={styles.questionsPill}>
-          <Text style={styles.questionsPillText}>10 Qs • +100 XP</Text>
+
+        {/* 2D Vector Illustrated Icon */}
+        <View style={[styles.iconContainer]}>
+          <Image
+            source={item.image}
+            style={styles.categoryIllustration}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Category Name - Strongest Text Element */}
+        <Text numberOfLines={1} style={styles.categoryTitle}>
+          {item.name}
+        </Text>
+
+        {/* Short Description */}
+        <Text numberOfLines={1} style={styles.categoryDesc}>
+          {item.description}
+        </Text>
+
+        {/* Reward Information Pill */}
+        <View style={[styles.rewardPill, {backgroundColor: item.color + '12'}]}>
+          <Text style={[styles.rewardPillText, {color: item.color}]}>
+            10 Questions · +100 XP
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -129,7 +227,13 @@ const SelectQuiz = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Home');
+            }
+          }}
           style={styles.backButton}
           hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
           <Text style={styles.backArrow}>‹</Text>
@@ -152,18 +256,24 @@ const SelectQuiz = () => {
                 key={diff.key}
                 style={[
                   styles.diffPill,
-                  isSelected && {
-                    backgroundColor: diff.activeColor,
-                    borderColor: diff.activeColor,
-                  },
+                  isSelected && [
+                    styles.diffPillSelected,
+                    {
+                      backgroundColor: diff.activeColor + '15',
+                      borderColor: diff.activeColor,
+                    },
+                  ],
                 ]}
-                activeOpacity={0.8}
+                activeOpacity={0.82}
                 onPress={() => setDifficulty(diff.key)}>
                 <Text style={styles.diffIcon}>{diff.icon}</Text>
                 <Text
                   style={[
                     styles.diffText,
-                    isSelected && styles.diffTextSelected,
+                    isSelected && [
+                      styles.diffTextSelected,
+                      {color: diff.activeColor},
+                    ],
                   ]}>
                   {diff.label}
                 </Text>
@@ -203,15 +313,15 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 13,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -221,7 +331,7 @@ const styles = StyleSheet.create({
     color: '#25324A',
     fontSize: 26,
     fontWeight: 'bold',
-    marginTop: -4,
+    marginTop: -3,
   },
   headerTitleContainer: {
     alignItems: 'center',
@@ -229,25 +339,27 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#25324A',
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
     color: '#7A8B99',
     fontSize: 12,
+    fontWeight: '500',
     marginTop: 2,
   },
   headerSpacer: {
-    width: 38,
+    width: 40,
   },
   difficultyContainer: {
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   difficultyLabel: {
     color: '#7A8B99',
     fontSize: 11,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    fontWeight: '800',
+    letterSpacing: 0.8,
     marginBottom: 8,
   },
   difficultyRow: {
@@ -262,84 +374,119 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderRadius: 14,
+    borderRadius: 16,
     marginHorizontal: 4,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  diffPillSelected: {
+    shadowOpacity: 0,
+    elevation: 0,
   },
   diffIcon: {
-    fontSize: 14,
-    marginRight: 4,
+    fontSize: 13,
+    marginRight: 5,
+    backgroundColor: 'transparent',
   },
   diffText: {
     color: '#7A8B99',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    backgroundColor: 'transparent',
   },
   diffTextSelected: {
-    color: '#FFFFFF',
+    fontWeight: '800',
+    backgroundColor: 'transparent',
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingBottom: 28,
   },
   columnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   categoryCard: {
     width: CARD_WIDTH,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: 'center',
-    borderBottomWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.15,
+    borderWidth: 1.5,
+    shadowColor: '#0F172A',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.06,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 2,
   },
-  iconCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  cardHeaderRow: {
+    width: '100%',
+    height: 18,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  statusBadgePlayed: {
+    backgroundColor: '#35C87818',
+  },
+  statusBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+  },
+  statusBadgeTextPlayed: {
+    color: '#35C878',
+  },
+  statusBadgePlaceholder: {
+    height: 18,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    marginBottom: 8,
   },
-  categoryIcon: {
-    fontSize: 28,
+  categoryIllustration: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
   categoryTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#1E293B',
+    fontSize: 15,
+    fontWeight: '800',
     marginBottom: 2,
     textAlign: 'center',
   },
   categoryDesc: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#7A8B99',
     fontSize: 11,
-    marginBottom: 10,
+    fontWeight: '500',
+    marginBottom: 8,
     textAlign: 'center',
   },
-  questionsPill: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    paddingHorizontal: 10,
+  rewardPill: {
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  questionsPillText: {
-    color: '#FFFFFF',
+  rewardPillText: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: -0.1,
   },
 });
