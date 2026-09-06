@@ -1,7 +1,12 @@
 package com.deepdhar.quizzo;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
+import android.os.Handler;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
@@ -47,6 +52,29 @@ public class MainApplication extends Application implements ReactApplication {
       return mNewArchitectureNativeHost;
     } else {
       return mReactNativeHost;
+    }
+  }
+
+  @Override
+  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+    if (Build.VERSION.SDK_INT >= 34 && getApplicationInfo().targetSdkVersion >= 34) {
+      return super.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+    } else {
+      return super.registerReceiver(receiver, filter);
+    }
+  }
+
+  @Override
+  public Intent registerReceiver(
+      BroadcastReceiver receiver,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler) {
+    if (Build.VERSION.SDK_INT >= 34 && getApplicationInfo().targetSdkVersion >= 34) {
+      return super.registerReceiver(
+          receiver, filter, broadcastPermission, scheduler, Context.RECEIVER_EXPORTED);
+    } else {
+      return super.registerReceiver(receiver, filter, broadcastPermission, scheduler);
     }
   }
 
