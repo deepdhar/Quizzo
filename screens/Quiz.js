@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Animated,
   Alert,
+  BackHandler,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import ProgressBar from '../components/ProgressBar';
@@ -151,6 +152,36 @@ const Quiz = ({route}) => {
   // Timer state
   const [timeLeft, setTimeLeft] = useState(hasTimer ? QUESTION_TIME : 0);
   const [quitModalVisible, setQuitModalVisible] = useState(false);
+  const isLeavingRef = useRef(false);
+
+  // Intercept system back navigation (hardware back button, gestures, nav buttons)
+  useEffect(() => {
+    const onHardwareBackPress = () => {
+      if (isLeavingRef.current) {
+        return false;
+      }
+      setQuitModalVisible(true);
+      return true;
+    };
+
+    const backSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onHardwareBackPress,
+    );
+
+    const removeListener = navigation.addListener('beforeRemove', e => {
+      if (isLeavingRef.current) {
+        return;
+      }
+      e.preventDefault();
+      setQuitModalVisible(true);
+    });
+
+    return () => {
+      backSubscription.remove();
+      removeListener();
+    };
+  }, [navigation]);
 
   // Animation states
   const [showConfetti, setShowConfetti] = useState(false);
@@ -241,6 +272,7 @@ const Quiz = ({route}) => {
         setShowConfetti(false);
       } else {
         // Quiz finished
+        isLeavingRef.current = true;
         navigation.navigate('Result', {
           score: latestScore,
           totalQuestions: questions.length,
@@ -427,7 +459,10 @@ const Quiz = ({route}) => {
             style={styles.retryBtn}
           />
           <TouchableOpacity
-            onPress={() => navigation.navigate('SelectQuiz')}
+            onPress={() => {
+              isLeavingRef.current = true;
+              navigation.navigate('SelectQuiz');
+            }}
             style={styles.chooseAnotherBtn}>
             <Text style={styles.chooseAnotherText}>
               Choose Another Category
@@ -663,6 +698,7 @@ const Quiz = ({route}) => {
         visible={quitModalVisible}
         onCancel={() => setQuitModalVisible(false)}
         onConfirm={() => {
+          isLeavingRef.current = true;
           setQuitModalVisible(false);
           navigation.navigate('Home');
         }}

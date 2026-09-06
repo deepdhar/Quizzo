@@ -9,77 +9,130 @@ import {
   TextInput,
   Alert,
   DeviceEventEmitter,
+  Image,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
-import {
-  getUserProfile,
-  updateUserProfile,
-  AVATAR_OPTIONS,
-} from '../utils/leaderboardService';
+import LogoutModal from '../components/LogoutModal';
+import ProfileUpdatedModal from '../components/ProfileUpdatedModal';
+import {getUserProfile, updateUserProfile} from '../utils/leaderboardService';
+import {getPlayerStats} from '../utils/gameStorage';
 import {signOutUser} from '../utils/authService';
 import {resetRoot} from '../navigation';
 
-const LogoutIcon = ({color = '#FFFFFF', size = 18}) => (
-  <View
-    style={{
-      width: size,
-      height: size,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 10,
-    }}>
+// Custom 2D illustrated avatar characters matching Quizzo design system
+const AVATAR_CHARACTERS = [
+  {
+    id: '🦁',
+    label: 'Lion',
+    image: require('../assets/avatars/lion.jpg'),
+  },
+  {
+    id: '🚀',
+    label: 'Rocket',
+    image: require('../assets/avatars/rocket.jpg'),
+  },
+  {
+    id: '👑',
+    label: 'Crown',
+    image: require('../assets/avatars/crown.jpg'),
+  },
+  {
+    id: '🦊',
+    label: 'Fox',
+    image: require('../assets/avatars/fox.jpg'),
+  },
+  {
+    id: '⚡',
+    label: 'Lightning',
+    image: require('../assets/avatars/lightning.jpg'),
+  },
+  {
+    id: '🤖',
+    label: 'Robot',
+    emoji: '🤖',
+  },
+  {
+    id: '🦄',
+    label: 'Unicorn',
+    emoji: '🦄',
+  },
+  {
+    id: '🐼',
+    label: 'Panda',
+    emoji: '🐼',
+  },
+  {
+    id: '🦉',
+    label: 'Owl',
+    emoji: '🦉',
+  },
+  {
+    id: '🐯',
+    label: 'Tiger',
+    emoji: '🐯',
+  },
+];
+
+// Checkmark icon for Save Profile button
+const CheckIcon = ({color = '#FFFFFF', size = 18}) => (
+  <View style={[styles.iconBox, {width: size, height: size}]}>
+    <View
+      style={[
+        styles.checkMark,
+        {
+          width: size * 0.4,
+          height: size * 0.72,
+          borderColor: color,
+        },
+      ]}
+    />
+  </View>
+);
+
+// Restrained secondary red logout icon
+const LogoutIcon = ({color = '#FF5C67', size = 18}) => (
+  <View style={[styles.logoutIconBox, {width: size, height: size}]}>
     {/* Door outline */}
     <View
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: 1,
-        bottom: 1,
-        width: size * 0.52,
-        borderWidth: 2,
-        borderRightWidth: 0,
-        borderColor: color,
-        borderTopLeftRadius: 4,
-        borderBottomLeftRadius: 4,
-      }}
+      style={[
+        styles.logoutDoor,
+        {
+          width: size * 0.52,
+          borderColor: color,
+        },
+      ]}
     />
     {/* Arrow shaft */}
     <View
-      style={{
-        position: 'absolute',
-        left: size * 0.26,
-        width: size * 0.52,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-      }}
+      style={[
+        styles.logoutShaft,
+        {
+          left: size * 0.26,
+          width: size * 0.52,
+          backgroundColor: color,
+        },
+      ]}
     />
     {/* Arrow top head */}
     <View
-      style={{
-        position: 'absolute',
-        right: 1,
-        top: size * 0.5 - 4.5,
-        width: 6,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-        transform: [{rotate: '45deg'}],
-      }}
+      style={[
+        styles.logoutArrowHeadTop,
+        {
+          top: size * 0.5 - 4.5,
+          backgroundColor: color,
+        },
+      ]}
     />
     {/* Arrow bottom head */}
     <View
-      style={{
-        position: 'absolute',
-        right: 1,
-        bottom: size * 0.5 - 4.5,
-        width: 6,
-        height: 2,
-        backgroundColor: color,
-        borderRadius: 1,
-        transform: [{rotate: '-45deg'}],
-      }}
+      style={[
+        styles.logoutArrowHeadBottom,
+        {
+          bottom: size * 0.5 - 4.5,
+          backgroundColor: color,
+        },
+      ]}
     />
   </View>
 );
@@ -89,6 +142,10 @@ const Profile = () => {
   const [playerName, setPlayerName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('🚀');
   const [isSaving, setIsSaving] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [playerStats, setPlayerStats] = useState(null);
 
   const handleBack = () => {
     if (navigation.canGoBack()) {
@@ -98,32 +155,13 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out of Quizzo?', [
-      {text: 'Cancel', style: 'cancel'},
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: async () => {
-          await signOutUser();
-          DeviceEventEmitter.emit('USER_PROFILE_UPDATED', null);
-          const parentNav = navigation.getParent();
-          if (parentNav) {
-            parentNav.reset({
-              index: 0,
-              routes: [{name: 'Login'}],
-            });
-          } else {
-            resetRoot('Login');
-          }
-        },
-      },
-    ]);
-  };
-
-  const loadProfile = async () => {
+  const loadData = async () => {
     try {
-      const prof = await getUserProfile();
+      const [prof, stats] = await Promise.all([
+        getUserProfile(),
+        getPlayerStats(),
+      ]);
+
       if (prof) {
         setPlayerName(prof.name || 'Player One');
         setSelectedAvatar(prof.avatar || '🚀');
@@ -131,13 +169,17 @@ const Profile = () => {
           DeviceEventEmitter.emit('USER_PROFILE_UPDATED', prof.avatar);
         }
       }
+
+      if (stats) {
+        setPlayerStats(stats);
+      }
     } catch (e) {
       // Ignored
     }
   };
 
   useEffect(() => {
-    loadProfile();
+    loadData();
   }, []);
 
   const handleSaveProfile = async () => {
@@ -146,14 +188,30 @@ const Profile = () => {
     setIsSaving(false);
     if (updated) {
       DeviceEventEmitter.emit('USER_PROFILE_UPDATED', selectedAvatar);
-      Alert.alert('Success', 'Profile updated successfully!');
+      setIsSuccessModalVisible(true);
     } else {
       Alert.alert('Error', 'Failed to update profile. Please try again.');
     }
   };
 
+  const handleConfirmLogout = async () => {
+    setIsLogoutModalVisible(false);
+    await signOutUser();
+    DeviceEventEmitter.emit('USER_PROFILE_UPDATED', null);
+    const parentNav = navigation.getParent();
+    if (parentNav) {
+      parentNav.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
+    } else {
+      resetRoot('Login');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* ── 1. HEADER ── */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={handleBack}
@@ -169,59 +227,131 @@ const Profile = () => {
         <View style={styles.emptyHeaderSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}>
+        {/* ── 2. PLAYER CUSTOMIZATION PANEL CARD ── */}
         <View style={styles.card}>
+          {/* Avatar Section */}
           <Text style={styles.cardTitle}>Choose Your Avatar</Text>
-
           <View style={styles.avatarPickerRow}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.avatarList}>
-              {AVATAR_OPTIONS.map((av, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[
-                    styles.avatarPickItem,
-                    selectedAvatar === av && styles.avatarPickItemSelected,
-                  ]}
-                  onPress={() => setSelectedAvatar(av)}>
-                  <Text style={styles.avatarPickEmoji}>{av}</Text>
-                </TouchableOpacity>
-              ))}
+              {AVATAR_CHARACTERS.map(char => {
+                const isSelected = selectedAvatar === char.id;
+                return (
+                  <TouchableOpacity
+                    key={char.id}
+                    style={[
+                      styles.avatarPickItem,
+                      isSelected && styles.avatarPickItemSelected,
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedAvatar(char.id)}>
+                    {char.image ? (
+                      <Image
+                        source={char.image}
+                        style={styles.avatarImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Text style={styles.avatarPickEmoji}>
+                        {char.emoji || char.id}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
 
+          {/* Player Nickname Section */}
           <Text style={styles.cardTitle}>Player Nickname</Text>
           <TextInput
-            style={styles.nameInput}
+            style={[styles.nameInput, isFocused && styles.nameInputFocused]}
             value={playerName}
             onChangeText={setPlayerName}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder="Enter your nickname"
-            placeholderTextColor="#7A8B99"
+            placeholderTextColor="#94A3B8"
             maxLength={15}
           />
 
+          {/* 5. Save Profile Button: Primary Quizzo Blue (#407CF4) */}
           <Button3D
-            title={isSaving ? 'SAVING...' : 'SAVE PROFILE ✨'}
+            title={isSaving ? 'SAVING...' : 'SAVE PROFILE'}
             onPress={handleSaveProfile}
-            color="#63C174"
-            shadowColor="#4FA05D"
-            size="medium"
+            color="#407CF4"
+            shadowColor="#255CD0"
+            size="large"
+            icon={<CheckIcon color="#FFFFFF" size={18} />}
             disabled={isSaving}
             style={styles.saveProfileBtn}
           />
         </View>
 
-        {/* Logout Button */}
+        {/* ── 7. GAMIFIED PLAYER PROGRESSION STATS ── */}
+        <View style={styles.statsCard}>
+          <View style={styles.statsHeaderRow}>
+            <Text style={styles.statsSectionTitle}>PLAYER STATS</Text>
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelBadgeText}>
+                {playerStats?.levelInfo?.icon || '🌱'} Level{' '}
+                {playerStats?.levelInfo?.level || 1} ·{' '}
+                {playerStats?.levelInfo?.title || 'Curious Scout'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.statGrid}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumberXP}>
+                {playerStats?.totalXP || 0} XP
+              </Text>
+              <Text style={styles.statLabel}>Total Earned</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statNumberBlue}>
+                {playerStats?.gamesPlayed || 0}
+              </Text>
+              <Text style={styles.statLabel}>Quizzes Played</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statNumberGreen}>
+                {playerStats?.bestScore || 0}/10
+              </Text>
+              <Text style={styles.statLabel}>Best Score</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── 6. RESTRAINED SECONDARY LOGOUT BUTTON ── */}
         <TouchableOpacity
           style={styles.logoutButton}
-          activeOpacity={0.85}
-          onPress={handleLogout}>
-          <LogoutIcon color="#FFFFFF" size={18} />
+          activeOpacity={0.8}
+          onPress={() => setIsLogoutModalVisible(true)}>
+          <LogoutIcon color="#FF5C67" size={18} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* ── PART 2: CUSTOM QUIZZO LOGOUT CONFIRMATION MODAL ── */}
+      <LogoutModal
+        visible={isLogoutModalVisible}
+        onCancel={() => setIsLogoutModalVisible(false)}
+        onConfirm={handleConfirmLogout}
+      />
+
+      {/* ── CUSTOM QUIZZO PROFILE UPDATED SUCCESS MODAL ── */}
+      <ProfileUpdatedModal
+        visible={isSuccessModalVisible}
+        onDismiss={() => setIsSuccessModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -266,7 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: '#25324A',
+    color: '#253858',
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -277,101 +407,254 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
+
+  // ── Card Container ──
   card: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: 26,
+    padding: 22,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 3,
+    marginBottom: 16,
   },
   cardTitle: {
-    color: '#25324A',
+    color: '#253858',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 12,
+    letterSpacing: 0.2,
   },
+
+  // ── Avatar Selector ──
   avatarPickerRow: {
-    marginBottom: 24,
+    marginBottom: 22,
     width: '100%',
   },
   avatarList: {
-    paddingVertical: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
   },
   avatarPickItem: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
-    borderWidth: 1.5,
+    marginRight: 12,
+    borderWidth: 2,
     borderColor: '#E2E8F0',
     shadowColor: '#000000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.07,
     shadowRadius: 4,
     elevation: 2,
+    overflow: 'hidden',
   },
   avatarPickItemSelected: {
-    borderColor: '#3B82F6',
+    borderColor: '#407CF4',
     borderWidth: 2.5,
     backgroundColor: '#EFF6FF',
-    shadowColor: '#3B82F6',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
-    transform: [{scale: 1.05}],
+    shadowColor: '#407CF4',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 5,
+    transform: [{scale: 1.06}],
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarPickEmoji: {
-    fontSize: 28,
+    fontSize: 30,
     color: '#000000',
     opacity: 1,
   },
+
+  // ── Player Nickname Input ──
   nameInput: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: '#25324A',
+    color: '#253858',
     fontSize: 16,
-    borderWidth: 1,
+    fontWeight: '600',
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     marginBottom: 20,
   },
+  nameInputFocused: {
+    borderColor: '#407CF4',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#407CF4',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+
+  // ── Save Button ──
   saveProfileBtn: {
     width: '100%',
-    marginTop: 8,
+    marginTop: 4,
   },
+
+  // ── Player Gamification Stats Card ──
+  statsCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+    marginBottom: 4,
+  },
+  statsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  statsSectionTitle: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  levelBadge: {
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+  },
+  levelBadgeText: {
+    color: '#407CF4',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  statGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#E2E8F0',
+  },
+  statNumberXP: {
+    color: '#FFC83D',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  statNumberBlue: {
+    color: '#407CF4',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  statNumberGreen: {
+    color: '#35C878',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  statLabel: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // ── Restrained Secondary Logout Button ──
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
     borderRadius: 18,
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 20,
     marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#DC2626',
-    shadowColor: '#DC2626',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: '#FECDD3',
+    shadowColor: '#FF5C67',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 1,
   },
   logoutText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
+    color: '#FF5C67',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+
+  // ── Icon Helper Styles ──
+  iconBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkMark: {
+    borderBottomWidth: 2.5,
+    borderRightWidth: 2.5,
+    transform: [{rotate: '45deg'}, {translateY: -2}],
+  },
+  logoutIconBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  logoutDoor: {
+    position: 'absolute',
+    left: 0,
+    top: 1,
+    bottom: 1,
+    borderWidth: 2,
+    borderRightWidth: 0,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+  },
+  logoutShaft: {
+    position: 'absolute',
+    height: 2,
+    borderRadius: 1,
+  },
+  logoutArrowHeadTop: {
+    position: 'absolute',
+    right: 1,
+    width: 6,
+    height: 2,
+    borderRadius: 1,
+    transform: [{rotate: '45deg'}],
+  },
+  logoutArrowHeadBottom: {
+    position: 'absolute',
+    right: 1,
+    width: 6,
+    height: 2,
+    borderRadius: 1,
+    transform: [{rotate: '-45deg'}],
   },
 });
