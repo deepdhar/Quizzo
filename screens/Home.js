@@ -3,13 +3,14 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   FlatList,
   Dimensions,
   Image,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {getPlayerStats, getComputedAchievements} from '../utils/gameStorage';
 
@@ -78,6 +79,7 @@ const CAROUSEL_DATA = [
 
 const Home = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState({
     totalXP: 0,
     streak: 0,
@@ -277,10 +279,17 @@ const Home = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 80 : 100,
+          },
+        ]}>
         {/* ── HEADER ── */}
         <View style={styles.header}>
           <Text style={styles.appName}>Quizzo</Text>
@@ -464,7 +473,7 @@ const Home = () => {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

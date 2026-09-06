@@ -3,10 +3,11 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
 import {decodeText} from '../utils/decoder';
@@ -15,6 +16,7 @@ import {syncPlayerToLeaderboard} from '../utils/leaderboardService';
 
 const Result = ({route}) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const {
     score = 0,
     totalQuestions = 10,
@@ -75,7 +77,15 @@ const Result = ({route}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+          paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+        },
+      ]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
@@ -252,7 +262,7 @@ const Result = ({route}) => {
           <Text style={styles.homeLinkText}>🏠 Back to Home Screen</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -266,7 +276,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: 48,
   },
   levelUpBanner: {
     flexDirection: 'row',

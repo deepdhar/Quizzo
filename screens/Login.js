@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
@@ -12,7 +11,9 @@ import {
   ActivityIndicator,
   DeviceEventEmitter,
   Image,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import GoogleIcon from '../components/GoogleIcon';
 import {
@@ -24,6 +25,7 @@ import {configureGoogleSignIn, signInWithGoogle} from '../utils/authService';
 
 const Login = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGuestLoading, setIsGuestLoading] = useState(false);
 
@@ -87,7 +89,8 @@ const Login = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#407CF4" />
       {/* Subtle Floating Background Accents */}
       <View pointerEvents="none" style={styles.bgDecorations}>
         <Text style={[styles.bgSymbol, styles.symbolTopLeft]}>✦</Text>
@@ -104,7 +107,13 @@ const Login = () => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scrollContent}>
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+              paddingBottom: insets.bottom > 0 ? insets.bottom + 20 : 32,
+            },
+          ]}>
           {/* ── 3. QUIZZO BRANDING & MASCOT ── */}
           <View style={styles.brandingSection}>
             <View style={styles.mascotWrapper}>
@@ -202,7 +211,7 @@ const Login = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -223,7 +232,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '100%',
+    flexGrow: 1,
   },
 
   // Low-contrast background floating shapes
