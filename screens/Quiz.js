@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import ProgressBar from '../components/ProgressBar';
 import TimerBadge from '../components/TimerBadge';
 import QuitModal from '../components/QuitModal';
@@ -157,20 +157,29 @@ const Quiz = ({route}) => {
   const isLeavingRef = useRef(false);
 
   // Intercept system back navigation (hardware back button, gestures, nav buttons)
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBackPress = () => {
+        if (isLeavingRef.current) {
+          return false;
+        }
+        setQuitModalVisible(true);
+        return true;
+      };
+
+      const backSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onHardwareBackPress,
+      );
+
+      return () => {
+        backSubscription.remove();
+      };
+    }, [])
+  );
+
+  // Intercept stack gesture / programmatic transitions
   useEffect(() => {
-    const onHardwareBackPress = () => {
-      if (isLeavingRef.current) {
-        return false;
-      }
-      setQuitModalVisible(true);
-      return true;
-    };
-
-    const backSubscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onHardwareBackPress,
-    );
-
     const removeListener = navigation.addListener('beforeRemove', e => {
       if (isLeavingRef.current) {
         return;
@@ -180,7 +189,6 @@ const Quiz = ({route}) => {
     });
 
     return () => {
-      backSubscription.remove();
       removeListener();
     };
   }, [navigation]);
@@ -726,7 +734,11 @@ const Quiz = ({route}) => {
         onConfirm={() => {
           isLeavingRef.current = true;
           setQuitModalVisible(false);
-          navigation.navigate('Home');
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate('Home');
+          }
         }}
       />
     </View>
