@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   },
   googleBtnText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   guestBtnText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: '#0A2540',
     textAlign: 'center',
