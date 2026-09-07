@@ -12,6 +12,7 @@ import {
   DeviceEventEmitter,
   Image,
   StatusBar,
+  Linking,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -23,6 +24,9 @@ import {
 } from '../utils/leaderboardService';
 import {configureGoogleSignIn, signInWithGoogle} from '../utils/authService';
 
+const PRIVACY_POLICY_URL =
+  'https://drive.google.com/file/d/1MXhKjdgQ7MPnw6Iw8nkNbohCRVWx0SGa/view?usp=sharing';
+
 const Login = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -32,6 +36,15 @@ const Login = () => {
   useEffect(() => {
     configureGoogleSignIn();
   }, []);
+
+  const handleOpenPrivacyPolicy = () => {
+    Linking.openURL(PRIVACY_POLICY_URL).catch(() => {
+      Alert.alert(
+        'Unable to open link',
+        'Please check your internet connection or browser settings.',
+      );
+    });
+  };
 
   // 1-Tap Google Sign-In
   const handleGoogleSignInPress = async () => {
@@ -204,7 +217,12 @@ const Login = () => {
               🔒 Your progress and XP are synced securely.
             </Text>
             <View style={styles.legalRow}>
-              <Text style={styles.legalLink}>Privacy Policy</Text>
+              <TouchableOpacity
+                onPress={handleOpenPrivacyPolicy}
+                activeOpacity={0.7}
+                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                <Text style={styles.legalLink}>Privacy Policy</Text>
+              </TouchableOpacity>
               <Text style={styles.legalDot}>·</Text>
               <Text style={styles.legalLink}>Terms of Service</Text>
             </View>
@@ -508,6 +526,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     color: 'rgba(255, 255, 255, 0.72)',
+    textDecorationLine: 'underline',
   },
   legalDot: {
     marginHorizontal: 6,
