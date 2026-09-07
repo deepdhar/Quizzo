@@ -3,12 +3,13 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   FlatList,
   Dimensions,
   Image,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {getPlayerStats} from '../utils/gameStorage';
 
@@ -98,6 +99,7 @@ const DIFFICULTIES = [
 
 const SelectQuiz = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [difficulty, setDifficulty] = useState('medium');
   const [stats, setStats] = useState({
     categoriesPlayed: [],
@@ -223,7 +225,14 @@ const SelectQuiz = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top > 0 ? insets.top : 0,
+        },
+      ]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -290,10 +299,15 @@ const SelectQuiz = () => {
         renderItem={renderCategoryCard}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 80 : 100,
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

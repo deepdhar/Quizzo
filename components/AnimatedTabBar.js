@@ -7,15 +7,19 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
 const AnimatedTabBar = ({state, descriptors, navigation}) => {
+  const insets = useSafeAreaInsets();
   const [tabBarWidth, setTabBarWidth] = useState(width);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   const tabCount = state.routes.length;
   const tabWidth = tabBarWidth / tabCount;
+  const bottomInset = insets.bottom > 0 ? insets.bottom : 10;
+  const barHeight = 70 + (insets.bottom > 0 ? insets.bottom : 0);
 
   useEffect(() => {
     Animated.spring(slideAnim, {
@@ -28,7 +32,13 @@ const AnimatedTabBar = ({state, descriptors, navigation}) => {
 
   return (
     <View 
-      style={styles.container}
+      style={[
+        styles.container,
+        {
+          paddingBottom: bottomInset,
+          height: barHeight,
+        },
+      ]}
       onLayout={(e) => setTabBarWidth(e.nativeEvent.layout.width)}
     >
       {/* Sliding Pill Background */}

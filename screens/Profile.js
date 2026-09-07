@@ -3,14 +3,15 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   TextInput,
   Alert,
   DeviceEventEmitter,
   Image,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
 import LogoutModal from '../components/LogoutModal';
@@ -139,6 +140,7 @@ const LogoutIcon = ({color = '#FF5C67', size = 18}) => (
 
 const Profile = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [playerName, setPlayerName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('🚀');
   const [isSaving, setIsSaving] = useState(false);
@@ -210,7 +212,14 @@ const Profile = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top > 0 ? insets.top : 0,
+        },
+      ]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       {/* ── 1. HEADER ── */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -229,7 +238,12 @@ const Profile = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}>
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 80 : 100,
+          },
+        ]}>
         {/* ── 2. PLAYER CUSTOMIZATION PANEL CARD ── */}
         <View style={styles.card}>
           {/* Avatar Section */}
@@ -352,7 +366,7 @@ const Profile = () => {
         visible={isSuccessModalVisible}
         onDismiss={() => setIsSuccessModalVisible(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

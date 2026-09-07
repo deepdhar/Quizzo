@@ -3,13 +3,14 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   FlatList,
   Dimensions,
   Image,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {getPlayerStats, getComputedAchievements} from '../utils/gameStorage';
 
@@ -26,7 +27,7 @@ const CAROUSEL_DATA = [
     id: '1',
     badge: 'DAILY CHALLENGE ⭐',
     heading: 'Can you score\n8/10?',
-    sub: 'Test your knowledge today!',
+    sub: 'Test your\nknowledge today!',
     cta: 'PLAY NOW  ›',
     ctaColor: '#FFC857',
     ctaTextColor: '#25324A',
@@ -52,7 +53,7 @@ const CAROUSEL_DATA = [
     id: '3',
     badge: 'KEEP IT GOING! 🔥',
     heading: '7 Day Streak!',
-    sub: 'Keep your streak alive today.',
+    sub: 'Keep your streak\nalive today.',
     cta: 'CONTINUE  ›',
     ctaColor: '#FF8A4C',
     ctaTextColor: '#FFFFFF',
@@ -65,7 +66,7 @@ const CAROUSEL_DATA = [
     id: '4',
     badge: 'NEW TOPICS ADDED 🧪',
     heading: 'Science &\nNature',
-    sub: 'Fresh quizzes to power your brain!',
+    sub: 'Fresh quizzes to\npower your brain!',
     cta: 'EXPLORE NOW  ›',
     ctaColor: '#63C174',
     ctaTextColor: '#FFFFFF',
@@ -78,6 +79,7 @@ const CAROUSEL_DATA = [
 
 const Home = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState({
     totalXP: 0,
     streak: 0,
@@ -277,10 +279,17 @@ const Home = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 80 : 100,
+          },
+        ]}>
         {/* ── HEADER ── */}
         <View style={styles.header}>
           <Text style={styles.appName}>Quizzo</Text>
@@ -464,7 +473,7 @@ const Home = () => {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -572,13 +581,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   bannerHeading: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '900',
     lineHeight: 22,
     marginVertical: 2,
   },
   bannerSub: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
     opacity: 0.9,
     marginBottom: 4,

@@ -3,15 +3,16 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Animated,
   Alert,
   BackHandler,
+  StatusBar,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import ProgressBar from '../components/ProgressBar';
 import TimerBadge from '../components/TimerBadge';
 import QuitModal from '../components/QuitModal';
@@ -119,6 +120,7 @@ const ConfettiBurst = ({active}) => {
 };
 
 const Quiz = ({route}) => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const {
     url,
@@ -155,20 +157,29 @@ const Quiz = ({route}) => {
   const isLeavingRef = useRef(false);
 
   // Intercept system back navigation (hardware back button, gestures, nav buttons)
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBackPress = () => {
+        if (isLeavingRef.current) {
+          return false;
+        }
+        setQuitModalVisible(true);
+        return true;
+      };
+
+      const backSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onHardwareBackPress,
+      );
+
+      return () => {
+        backSubscription.remove();
+      };
+    }, [])
+  );
+
+  // Intercept stack gesture / programmatic transitions
   useEffect(() => {
-    const onHardwareBackPress = () => {
-      if (isLeavingRef.current) {
-        return false;
-      }
-      setQuitModalVisible(true);
-      return true;
-    };
-
-    const backSubscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onHardwareBackPress,
-    );
-
     const removeListener = navigation.addListener('beforeRemove', e => {
       if (isLeavingRef.current) {
         return;
@@ -178,7 +189,6 @@ const Quiz = ({route}) => {
     });
 
     return () => {
-      backSubscription.remove();
       removeListener();
     };
   }, [navigation]);
@@ -428,7 +438,15 @@ const Quiz = ({route}) => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          {
+            paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+          },
+        ]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
         <View style={styles.loadingCard}>
           <ActivityIndicator size="large" color="#407CF4" />
           <Text style={styles.loadingEmoji}>🧠</Text>
@@ -437,13 +455,21 @@ const Quiz = ({route}) => {
             Getting your {categoryName} quiz ready!
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (hasError || !questions || questions.length === 0) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          {
+            paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+          },
+        ]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
         <View style={styles.loadingCard}>
           <Text style={styles.loadingEmoji}>😕</Text>
           <Text style={styles.loadingTitle}>Oops! Network Error</Text>
@@ -469,7 +495,7 @@ const Quiz = ({route}) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -484,7 +510,15 @@ const Quiz = ({route}) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top > 0 ? insets.top + 8 : 16,
+          paddingBottom: insets.bottom > 0 ? insets.bottom + 8 : 16,
+        },
+      ]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       {/* ── 1. SIMPLIFIED TOP CONTROLS ── */}
       <View style={styles.hudHeader}>
         {/* Close Button */}
@@ -700,10 +734,14 @@ const Quiz = ({route}) => {
         onConfirm={() => {
           isLeavingRef.current = true;
           setQuitModalVisible(false);
-          navigation.navigate('Home');
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate('Home');
+          }
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TouchableOpacity,
   FlatList,
   Modal,
@@ -12,7 +11,9 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  StatusBar,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import Button3D from '../components/Button3D';
 import {
@@ -23,6 +24,7 @@ import {
 
 const Leaderboard = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [timeframe, setTimeframe] = useState('all-time');
   const [data, setData] = useState({
     leaderboard: [],
@@ -150,7 +152,14 @@ const Leaderboard = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top > 0 ? insets.top : 0,
+        },
+      ]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F9FC" />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -315,7 +324,7 @@ const Leaderboard = () => {
         </View>
       )}
 
-    </SafeAreaView>
+    </View>
   );
 };
 
