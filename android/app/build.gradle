@@ -18,8 +18,8 @@ android {
         applicationId "com.deepdhar.quizzo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "2.1"
+        versionCode 4
+        versionName "0.01"
     }
 
     signingConfigs {
@@ -44,11 +44,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE') && file(MYAPP_UPLOAD_STORE_FILE).exists()) {
-                signingConfig signingConfigs.release
-            } else {
-                signingConfig signingConfigs.debug
-            }
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
